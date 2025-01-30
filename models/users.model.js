@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 const validator = require('validator'); //this npm package used for validate before saving in db
 
 const addressSchema = new mongoose.Schema({
-      street: { type: String, required: true },
+      street: { type: String},
       city: { type: String, required: true },
       governorate: { type: String, required: true },
 })
@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema({
     contactNo: { type: String },
     image: { type: String, default: 'https://images.unsplash.com/photo-1570288685369-f7305163d0e3?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
   },
-  status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' }, //edit
+  status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
   products: { type: Array, default: [] },
   orderIds: {
     type: [Schema.Types.ObjectId],
