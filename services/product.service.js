@@ -19,3 +19,14 @@ module.exports.updateProduct = async(productId, updatedData) => {
 module.exports.deleteProduct = async (productId) => {
     return await productRepo.deleteProduct(productId);
 };
+
+module.exports.findByCategory = async (category) => {
+    if (!category) {
+        throw new Error("Category parameter is required");
+    }
+    const products = await productRepo.findByCategory(category);
+    if (!products.length) {
+        throw new Error("No products found for this category.");
+    }
+    return products;
+};

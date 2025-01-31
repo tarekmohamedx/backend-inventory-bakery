@@ -57,3 +57,13 @@ module.exports.deleteProduct = async (productId) => {
         throw error;
     }
 };
+
+  // delete a products
+  module.exports.findByCategory = async (category) => {
+    try {
+        return await Product.find({ category: category });
+    } catch (error) {
+        console.error("Error fetching products from DB:", error);
+        throw error;
+    }
+};
