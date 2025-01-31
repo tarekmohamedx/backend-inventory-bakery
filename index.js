@@ -1,11 +1,10 @@
-
-
 const cors = require("cors"); 
 const express = require("express");
 const morgan = require("morgan");
 const fileUpload = require("express-fileupload");
 const fs = require("fs");
 const path = require("path");
+const cartRouter = require('./routes/cart.route')
 
 
 const app = express();
@@ -24,6 +23,10 @@ app.use(
   })
 );
 
+//routing
+app.use('/api/cart', cartRouter);
+
+
 // controller registrations
 const controllersDirPath = path.join(__dirname, "controllers");
 const controllersDirectory = fs.readdirSync(controllersDirPath);
@@ -37,6 +40,7 @@ for (const controllerFile of controllersDirectory) {
     console.error(`Invalid controller: ${controllerFile}`);
   }
 }
+
 
 // export point
 module.exports = app;
