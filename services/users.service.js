@@ -23,4 +23,3 @@ module.exports.softDelete = async (userId) => {
 module.exports.deleteUser = async (userId) => {
     return await userRepo.deleteUser(userId);
 };
- 
