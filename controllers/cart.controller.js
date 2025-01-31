@@ -4,7 +4,7 @@ const userRepo = require('../repos/users.repo');
 
 const addToCart = async (req, res) => {
   try {
-    const { userId, productId, quantity, price } = req.body;
+    const { userId, productId, quantity} = req.body;
 
     if (quantity <= 0) {
       return res.status(400).json({
@@ -13,7 +13,7 @@ const addToCart = async (req, res) => {
       });
     }
 
-    const updatedCart = await cartService.addToCart(userId, productId, quantity, price);
+    const updatedCart = await cartService.addToCart(userId, productId, quantity);
 
     return res.status(200).json({
       status: httpStatusText.SUCCESS,
@@ -72,17 +72,17 @@ const getUserCart = async (req, res) => {
   };
 
   const removeCartItem = async(req, res)=>{
-    const itemId = req.params.id;
     try{
-        const {userId, quantity} = req.body;
-            const user = await userRepo.getUserById(userId);
+      const productId = req.params.id;
+      const userId = req.query.userId;
+      const user = await userRepo.getUserById(userId);
         if(!user){
             return res.status(400).json({
                 status: httpStatusText.FAIL,
                 message: "user not found"})
         }
 
-     const itemIndex = user.cartItems.findIndex((item)=> item.productId == itemId);
+     const itemIndex = user.cartItems.findIndex((item)=> item.productId == productId);
      if(itemIndex == -1)
         return res.status({status: httpStatusText.FAIL, message: "item does not exist"});
      user.cartItems.splice(itemIndex, 1)
