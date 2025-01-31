@@ -1,10 +1,11 @@
 const  productService  = require('../services/product.service');
 
+
 module.exports = (() => {
     const router = require("express").Router();
   
         // get products
-        router.get("/products", async (req, res, next) => {
+        router.get("/allproducts", async (req, res, next) => {
           try{
             const products = await productService.getProducts();
             res.status(200).json(products);
@@ -67,6 +68,19 @@ module.exports = (() => {
             console.error("Error deleting product:", error);
             res.status(500).json({ error: error.message });
           }
+        });
+
+        // Get products by category
+        router.get('/products', async (req, res) => {
+          try {
+            console.log("Query Params:", req.query);
+            const category = req.query.category;
+            const products = await productService.findByCategory(category);
+            res.status(200).json(products);
+        } catch (error) {
+            console.error('Error fetching products:', error);
+            res.status(500).json({ error: error.message });
+        }
         });
   
     return router;
