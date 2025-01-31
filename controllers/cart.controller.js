@@ -101,8 +101,7 @@ const getUserCart = async (req, res) => {
 
 const clearCart = async (req, res) => {
     try {
-      const { userId } = req.body;
-  
+      const userId = req.params.id;        
       const updatedCart = await cartService.clearCart(userId);
   
       return res.status(200).json({
