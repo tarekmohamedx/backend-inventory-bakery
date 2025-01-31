@@ -20,7 +20,37 @@ module.exports.getProductById = async (ProductId) => {
       throw error;
     }
 };
-  
+
+// get top products (best seller)
+
+module.exports.getTopProducts = async()=>{
+    try{
+const topProducts = await Product.find({})
+.sort({sales: -1}) //(descending order)
+ .limit(5);       // limit 5 product to appear
+return topProducts;
+
+    }catch(error){
+console.log("Error fetching top products",error);
+throw error
+    }
+};
+
+
+// get last product added
+
+module.exports.getLastProducts= async()=>{
+    try{
+const lastProducts = await Product.find({})
+.sort({createdAt : -1}).limit(6) // descending
+return lastProducts;
+    }catch(error){
+        console.log("Error fetching last product added",error)
+    }
+}
+
+
+
   // create products
 module.exports.createProduct = async (ProductData) => {
     try {
@@ -67,3 +97,6 @@ module.exports.deleteProduct = async (productId) => {
         throw error;
     }
 };
+
+
+
