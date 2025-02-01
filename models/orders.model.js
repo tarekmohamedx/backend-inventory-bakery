@@ -6,7 +6,7 @@ const shippingSchema = new mongoose.Schema({
   city: { type: String, required: true },
 });
 
-const customerNameSchema = new Schema({
+const customerNameSchema = new mongoose.Schema({
   firstname: {
     type: String,
     required: true,

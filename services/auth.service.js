@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const { signToken } = require("../utils/jwttoken.manager");
+// const { signToken } = require("../utils/jwttoken.manager");
 const { createUser, authenticateUser } = require("../services/user2.service");
 const UserService = require("../services/user2.service");
 // Register user [after register will return a token]
