@@ -52,7 +52,8 @@ const productSchema = new mongoose.Schema({
         default: Date.now },
     images: {
         type: [String]
-    }
+    },
+    accentColor: { type: String, default: '#0B374D' }
 });
 
 
@@ -94,4 +95,5 @@ const productSchema = new mongoose.Schema({
 
 
 
-module.exports = mongoose.model('Product', productSchema);
+const product = mongoose.model('Product', productSchema);
+module.exports = product;
