@@ -4,7 +4,9 @@ const morgan = require("morgan");
 const fileUpload = require("express-fileupload");
 const fs = require("fs");
 const path = require("path");
-const cartRouter = require('./routes/cart.route')
+const cartRouter = require('./routes/cart.route');
+const UserRouter=require('./routes/Users.route') 
+
 
 
 const app = express();
@@ -22,9 +24,9 @@ app.use(
     preserveExtension: true,
   })
 );
-
 //routing
 app.use('/api/cart', cartRouter);
+app.use('/api/users',UserRouter);//api/users
 
 
 // controller registrations
