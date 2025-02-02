@@ -16,28 +16,29 @@ const routes = {
       console.error("Error in register:", error.message);
       res
         .status(500)
-        .json({ message: error.message || "Failed to register user" });
+        .json({ message: error.message || "Failed to register user" });  
     }
   },
 
-  //   login: async (req, res) => {
-  //     try {
-  //       const { email, password } = req.body; // Directly use the entire body as user credentials
+    login: async (req, res) => {
+      try {
+        const { email, password } = req.body; // Directly use the entire body as user credentials
 
-  //       // Call loginUser service to handle user login and get the token
-  //       const { token } = await loginUser({ email, password });
+        // Call loginUser service to handle user login and get the token
+        const { token } = await loginUser({ email, password });
 
-  //       // Send success response with the token
-  //       res.status(200).json({ token });
-  //     } catch (error) {
-  //       console.error("Error in login:", error.message);
-  //       res
-  //         .status(500)
-  //         .json({ message: error.message || "Failed to login user" });
-  //     }
-  //   },
+        // Send success response with the token
+        res.status(200).json({ token });
+      } catch (error) {
+        console.error("Error in login:", error.message);
+        res
+          .status(500)
+          .json({ message: error.message || "Failed to login user" });
+      }
+    },
 };
 
 router.post("/auth/register", routes.register);
+router.post("/auth/login", routes.login);
 
 module.exports = router;
