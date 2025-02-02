@@ -24,7 +24,7 @@ app.use(
 );
 
 //routing
-app.use('/api/cart', cartRouter);
+// app.use('/api/cart', cartRouter);
 
 
 // controller registrations
