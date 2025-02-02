@@ -30,3 +30,13 @@ module.exports.findByCategory = async (category) => {
     }
     return products;
 };
+
+// call getTopProduct
+module.exports.getTopProducts= async()=>{
+    return await productRepo.getTopProducts();
+}
+
+// get last product
+module.exports.getLastProducts = async ()=>{
+    return await productRepo.getLastProducts();
+}

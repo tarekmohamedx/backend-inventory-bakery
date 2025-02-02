@@ -1,4 +1,7 @@
+
 const  productService  = require('../services/product.service');
+const { getLastProducts } = require('../repos/product.repo');
+const productService = require('../services/product.service');
 const ImageKit = require("imagekit");
 const imagekit = new ImageKit({
   publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
@@ -33,7 +36,35 @@ module.exports = (() => {
             res.status(500).json({ error: error.message });
           }
         });
+  
+          // get top products (best seller products)
+        router.get("/top-products", async (req, res, next) => {
+          try {
+            const top_products = await productService.getTopProducts();
+            res.status(200).json(top_products)
+          } catch (error) {
+            console.error("Error fetching top products:", error);
+            res.status(500).json({ error: error.message })
+          }
+        })
         
+  
+          // get the last products added  
+        router.get("/last-products", async (req, res) => {
+          try {
+            const last_product = await productService.getLastProducts();
+            if (!last_product) {
+              return res.status(404).json({ error: "No products found" });
+            }
+            res.status(200).json(last_product)
+          } catch (error) {
+            console.log("Error fetching last products", error)
+            res.status(500).json({ error: error.message })
+          }
+
+        })
+  
+  
         
         router.post("/products", async (req, res) => {
           try {
@@ -140,6 +171,38 @@ module.exports = (() => {
             res.status(500).json({ error: error.message });
         }
         });
-  
-    return router;
+
+
+
+
+module.exports = (() => {
+  const router = require("express").Router();
+
+  // get products
+  router.get("/allproducts", async (req, res, next) => {
+    try {
+      const products = await productService.getProducts();
+      res.status(200).json(products);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+
+  // get products detail
+  router.get("/products/:id", async (req, res) => {
+    try {
+      const product = await productService.getProductById(req.params.id);
+      if (!product) {
+        return res.status(404).json({ error: "product not found" });
+      }
+      res.status(200).json(product);
+    } catch (error) {
+      console.error("Error fetching products details:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+
+  return router;
 })();
