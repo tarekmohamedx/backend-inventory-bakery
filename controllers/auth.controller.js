@@ -10,6 +10,7 @@ const routes = {
       // Call registerUser service to handle user registration and get the token
       const { token } = await registerUser(userbody);
 
+      req.session.token = token;
       // Send success response with the token
       res.status(201).json({ success: true, token });
     } catch (error) {
