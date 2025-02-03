@@ -3,18 +3,19 @@ const productRepo = require('../repos/product.repo');
 const { calculateTotal } = require('../utils/cartUtils');
 
 exports.addToCart = async (userId, productId, quantity) => {
-  const user = await userRepo.getUserById(userId);
+  // catch id from token after decode it rom session 
+  const user = await userRepo.getUserById(userId); // return user so i catch his cart  
   if (!user) throw new Error("User not found");
 
-  const existingCartItem = user.cartItems.find((item) => item.productId == productId);
-  const product = await productRepo.getProductById(productId);
+  const existingCartItem = user.cartItems.find((item) => item.productId == productId);  // if item already exist or not if exist increase quantity 
+  const product = await productRepo.getProductById(productId); 
   const price = product.price;
   
   if (existingCartItem) {
-    existingCartItem.quantity += quantity;
+    existingCartItem.quantity += quantity;  
   } else {
-    user.cartItems.push({ productId, quantity, price });
-    console.log('price case');
+    user.cartItems.push({ productId, quantity, price }); // uncle bob said : if code having any comments this code not follow clean code 
+    console.log('price case');   
     
   }
   
@@ -22,6 +23,7 @@ exports.addToCart = async (userId, productId, quantity) => {
   await user.save();
   return user.cartItems;
 };
+
 
 exports.getUserCart = async (userId) => {
     const user = await userRepo.getUserById(userId);

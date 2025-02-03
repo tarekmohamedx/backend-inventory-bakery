@@ -1,4 +1,4 @@
-const { registerUser, loginUser } = require("../services/auth.service");
+const { registerUser, loginUser , decode } = require("../services/auth.service");
 const router = require("express").Router();
 
 const routes = {
@@ -36,9 +36,22 @@ const routes = {
           .json({ message: error.message || "Failed to login user" });
       }
     },
+
+    decoding:async(req , res) => {
+      try{
+
+        const token = req.body.token;
+        const { s }= await decode({token});
+        res.status(200).json({s});
+      }catch(error){
+         res
+           .status(500)
+           .json({ message: error.message || "error when decoding" });
+      }
+    }
 };
 
 router.post("/auth/register", routes.register);
 router.post("/auth/login", routes.login);
-
+router.get('/auth/decode',routes.decoding);
 module.exports = router;
