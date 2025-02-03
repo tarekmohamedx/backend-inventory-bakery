@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const { signToken } = require("../utils/jwttoken.maneger");
 const { createUser, authenticateUser } = require("../services/user2.service");
 const UserService = require("../services/user2.service");
+const jwt = require("jsonwebtoken");
 // Register user [after register will return a token]
 const registerUser = async (userbody) => {
   try {
@@ -43,7 +44,19 @@ const loginUser = async ({ email, password }) => {
   }
 };
 
+// this will take a token and decode it 
+  const decode =  async ({token}) =>{
+try {
+  const decoded =  jwt.decode(token); // Decodes the token without verifying it
+  return decoded; // This will contain the claims like userId
+} catch (err) {
+  console.error("Error decoding token:", err);
+  return null;
+}
+  };
+
 module.exports = {
   registerUser,
   loginUser,
+  decode
 };
