@@ -1,4 +1,10 @@
 const  categoryService  = require('../services/category.service');
+const ImageKit = require("imagekit");
+const imagekit = new ImageKit({
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+  urlEndpoint: process.env.IMAGEKIT_ENDPOINT_URL,
+});
 
 module.exports = (() => {
     const router = require("express").Router();
@@ -30,18 +36,46 @@ module.exports = (() => {
             }
         });
         
-      
-
         // create categories
-        router.post("/category", async(req, res, next) => {
-            try{
-            const new_category = await categoryService.createCategory(req.body);
-            res.status(201).json(new_category);
-            }catch(error){
-            res.status(500).json({ error: error.message });
+        router.post("/category", async (req, res) => {
+            try {
+              console.log("Uploaded Files:", req.files); // Debug uploaded files
+          
+              if (!req.files || Object.keys(req.files).length === 0) {
+                return res.status(400).json({ error: "At least one image file is required" });
+              }
+          
+              // Ensure `req.files.images` is an array
+              const uploadedFiles = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
+          
+              // Upload images to ImageKit
+              const uploadedImages = await Promise.all(
+                uploadedFiles.map(async (file) => {
+                  const uploaded = await imagekit.upload({
+                    file: file.data, // Use `data` instead of `buffer`
+                    fileName: file.name, // Use `name` instead of `originalname`
+                    folder: "/categories",
+                  });
+                  return uploaded.url;
+                })
+              );
+          
+              console.log("ImageKit Upload URLs:", uploadedImages); // Debug ImageKit response
+          
+              // Create new category with uploaded images
+              const newCategory = await categoryService.createCategory({
+                name: req.body.name,
+                description: req.body.description,
+                images: uploadedImages,
+              });
+          
+              res.status(201).json(newCategory);
+            } catch (error) {
+              console.error("Error uploading images:", error);
+              res.status(500).json({ error: error.message });
             }
-        });
-        
+          });
+          
 
         // update categories
         router.put("/category/:id", async(req, res, next) => {
