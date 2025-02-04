@@ -46,8 +46,8 @@ const UserService = {
       const claim = {
         userid: createdUser._id,
         username: `${createdUser.first_name} ${createdUser.last_name}`, // Combine first and last names
-        first_name: createdUser.first_name,
-        last_name: createdUser.last_name,
+        first_name: createdUser.firstName,
+        last_name: createdUser.lastName,
         email: createdUser.email,
         password: hashedPassword,
         salt,
@@ -63,11 +63,11 @@ const UserService = {
       throw new Error("Failed to create user", error.message);
     }
   },
-  getUserById: async (userId) => {
-    const user = await UserRepository.findUserById(userId);
-    if (!user) throw new Error("User not found");
-    return user;
-  },
+  // getUserById: async (userId) => {
+  //   const user = await UserRepository.findUserById(userId);
+  //   if (!user) throw new Error("User not found");
+  //   return user;
+  // },
   // this method will return user by email
   // need to set some of validation cases
   //

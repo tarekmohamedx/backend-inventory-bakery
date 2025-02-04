@@ -7,6 +7,9 @@ module.exports.getUsers = async () => {
 module.exports.getUserById = async (userId) => {
     return await userRepo.getUserById(userId);
 };
+module.exports.getUserByemail = async (email) => {
+    return await userRepo.getUserByemail(email);
+};
 
 module.exports.createUser = async (userData) => {
     return await userRepo.createUser(userData);

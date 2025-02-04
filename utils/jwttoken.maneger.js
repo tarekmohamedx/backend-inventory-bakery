@@ -3,8 +3,8 @@ require("dotenv").config();
 
 // sign token
 
-module.exports.signToken = ({ claims }) => {
-  return jwt.sign(claims, process.env.JWT_SECRET, {
+module.exports.signToken = ({ claim }) => {
+  return jwt.sign(claim, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRY || "1d",
   });
 };
