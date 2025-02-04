@@ -16,7 +16,11 @@ const UserService = {
     try {
       // Generate salt
       const salt = await bcrypt.genSalt(10);
-
+      // put restriction on mail to input valid mail 
+  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+  if (!emailRegex.test(userData.email)) {
+    throw new Error("Invalid email format");
+  }
       // Hash the password with the generated salt
       const hashedPassword = await bcrypt.hash(userData.password, salt);
 
@@ -80,6 +84,11 @@ const UserService = {
   },
 
   // user it in login
+  /*
+  in login i get password will pass it in param with pass after get it from user 
+
+  
+  */
   authenticateUser: async (email, password) => {
     const user = await UserRepository.findUserByEmail(email);
     if (!user) throw new Error("Invalid email or password");
