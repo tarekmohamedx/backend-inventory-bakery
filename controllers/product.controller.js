@@ -68,141 +68,76 @@ module.exports = (() => {
 
         })
   
-  
-        // // create product
-        // router.post("/products", async (req, res) => {
-        //   try {
-        //     console.log("Request Body:", req.body);
-        //     console.log("Uploaded Files:", req.files);
-        
-        //     // Convert values to correct types
-        //     const parsedPrice = parseFloat(req.body.price);
-        //     const parsedStock = parseInt(req.body.stock, 10);
-        //     const parsedPreviousPrice = req.body.previousprice ? parseFloat(req.body.previousprice) : undefined;
-        //     const parsedSales = req.body.sales ? parseInt(req.body.sales, 10) : 0;
-        //     const parsedDiscounted = req.body.discounted === "true"; // Convert "true" string to boolean
-        //     const parsedCategoryId = req.body.categoryid; // Ensure categoryid is passed as a string
-        
-        //     // Validate required fields
-        //     if (!parsedCategoryId || isNaN(parsedPrice) || isNaN(parsedStock)) {
-        //       return res.status(400).json({
-        //         error: "Missing or invalid required fields: `categoryid`, `price`, `stock`",
-        //       });
-        //     }
-        
-        //     if (!req.files || Object.keys(req.files).length === 0) {
-        //       return res.status(400).json({ error: "At least one image file is required" });
-        //     }
-        
-        //     // Ensure `req.files.images` is an array
-        //     const uploadedFiles = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
-        
-        //     // Upload images to ImageKit
-        //     const uploadedImages = await Promise.all(
-        //       uploadedFiles.map(async (file) => {
-        //         const uploaded = await imagekit.upload({
-        //           file: file.data,
-        //           fileName: file.name,
-        //           folder: "/products",
-        //         });
-        //         return uploaded.url;
-        //       })
-        //     );
-        
-        //     console.log("ImageKit Upload URLs:", uploadedImages);
-        
-        //     // Create new product with parsed fields
-        //     const newProduct = await productService.createProduct({
-        //       name: req.body.name,
-        //       description: req.body.description,
-        //       price: parsedPrice,
-        //       category: req.body.category,
-        //       previousprice: parsedPreviousPrice,
-        //       sales: parsedSales,
-        //       stock: parsedStock,
-        //       flavor: req.body.flavor,
-        //       discounted: parsedDiscounted,
-        //       categoryid: parsedCategoryId,
-        //       images: uploadedImages,
-        //     });
-        
-        //     res.status(201).json(newProduct);
-        //   } catch (error) {
-        //     console.error("Error uploading images:", error);
-        //     res.status(500).json({ error: error.message });
-        //   }
-        // });
 
 
         // Create product
-// Create product without requiring categoryid
-router.post("/products", async (req, res) => {
-  try {
-    console.log("Request Body:", req.body);
-    console.log("Uploaded Files:", req.files);
+        router.post("/products", async (req, res) => {
+          try {
+            console.log("Request Body:", req.body);
+            console.log("Uploaded Files:", req.files);
 
-    // Convert values to correct types
-    const parsedPrice = parseFloat(req.body.price);
-    const parsedStock = parseInt(req.body.stock, 10);
-    const parsedPreviousPrice = req.body.previousprice ? parseFloat(req.body.previousprice) : undefined;
-    const parsedSales = req.body.sales ? parseInt(req.body.sales, 10) : 0;
-    const parsedDiscounted = req.body.discounted === "true"; // Convert "true" string to boolean
+            // Convert values to correct types
+            const parsedPrice = parseFloat(req.body.price);
+            const parsedStock = parseInt(req.body.stock, 10);
+            const parsedPreviousPrice = req.body.previousprice ? parseFloat(req.body.previousprice) : undefined;
+            const parsedSales = req.body.sales ? parseInt(req.body.sales, 10) : 0;
+            const parsedDiscounted = req.body.discounted === "true"; // Convert "true" string to boolean
 
-    // Validate required fields (categoryid removed)
-    if (isNaN(parsedPrice) || isNaN(parsedStock)) {
-      return res.status(400).json({
-        error: "Missing or invalid required fields: `price`, `stock`",
-      });
-    }
+            // Validate required fields (categoryid removed)
+            if (isNaN(parsedPrice) || isNaN(parsedStock)) {
+              return res.status(400).json({
+                error: "Missing or invalid required fields: `price`, `stock`",
+              });
+            }
 
-    // Check if images are provided
-    if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).json({ error: "At least one image file is required" });
-    }
+            // Check if images are provided
+            if (!req.files || Object.keys(req.files).length === 0) {
+              return res.status(400).json({ error: "At least one image file is required" });
+            }
 
-    // Ensure `req.files.images` is an array
-    // const uploadedFiles = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
-    const uploadedFiles = req.files?.images? (Array.isArray(req.files.images) ? req.files.images : [req.files.images]): [];
+            // Ensure `req.files.images` is an array
+            // const uploadedFiles = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
+            const uploadedFiles = req.files?.images? (Array.isArray(req.files.images) ? req.files.images : [req.files.images]): [];
 
 
-    // Upload images to ImageKit
-    const uploadedImages = await Promise.all(
-      uploadedFiles.map(async (file) => {
-        try {
-          const uploaded = await imagekit.upload({
-            file: file.data,
-            fileName: file.name,
-            folder: "/products",
-          });
-          return uploaded.url;
-        } catch (uploadError) {
-          console.error("Error uploading image:", uploadError);
-          throw new Error("Image upload failed");
-        }
-      })
-    );
+            // Upload images to ImageKit
+            const uploadedImages = await Promise.all(
+              uploadedFiles.map(async (file) => {
+                try {
+                  const uploaded = await imagekit.upload({
+                    file: file.data,
+                    fileName: file.name,
+                    folder: "/products",
+                  });
+                  return uploaded.url;
+                } catch (uploadError) {
+                  console.error("Error uploading image:", uploadError);
+                  throw new Error("Image upload failed");
+                }
+              })
+            );
 
-    console.log("ImageKit Upload URLs:", uploadedImages);
+            console.log("ImageKit Upload URLs:", uploadedImages);
 
-    // Create new product without categoryid
-    const newProduct = await Product.create({
-      name: req.body.name,
-      description: req.body.description,
-      price: parsedPrice,
-      previousprice: parsedPreviousPrice,
-      sales: parsedSales,
-      stock: parsedStock,
-      flavor: req.body.flavor,
-      discounted: parsedDiscounted,
-      images: uploadedImages, // Images uploaded successfully
-    });
+            // Create new product without categoryid
+            const newProduct = await Product.create({
+              name: req.body.name,
+              description: req.body.description,
+              price: parsedPrice,
+              previousprice: parsedPreviousPrice,
+              sales: parsedSales,
+              stock: parsedStock,
+              flavor: req.body.flavor,
+              discounted: parsedDiscounted,
+              images: uploadedImages, // Images uploaded successfully
+            });
 
-    return res.status(201).json(newProduct);
-  } catch (error) {
-    console.error("Error processing product creation:", error);
-    return res.status(500).json({ error: error.message || "Internal Server Error" });
-  }
-});
+            return res.status(201).json(newProduct);
+          } catch (error) {
+            console.error("Error processing product creation:", error);
+            return res.status(500).json({ error: error.message || "Internal Server Error" });
+          }
+        });
         
 
         // update products
