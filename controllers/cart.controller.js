@@ -80,7 +80,7 @@ router.post('/cart/add', verifyToken, async (req, res) => {
 
 
   // get user cart
-  router.get('/user/:id', authMiddlewere,async (req, res) => {
+  router.get('/user/:id',async (req, res) => {
     try {
       const userId = req.params.id;
       const cartData = await cartService.getUserCart(userId);
