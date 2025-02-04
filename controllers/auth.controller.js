@@ -42,7 +42,8 @@ const routes = {
       try{
 
         const token = req.body.token;
-        const { s }= await decode({token});
+        
+        const  s = await decode({token});
         res.status(200).json({s});
       }catch(error){
          res

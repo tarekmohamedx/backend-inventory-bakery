@@ -1,5 +1,6 @@
 // const express = require('express');
 // const cartController = require('../controllers/cart.controller');
+// const verifyToken = require('../middlewere/authentication.middlewere');
 
 // const router = express.Router();
 
@@ -11,6 +12,7 @@
 // router.delete("/clear/:id", cartController.clearCart);
 
 // router.get('/user/:id', cartController.getUserCart)
+// router.get('/user/:id', verifyToken, cartController.getUserCart)
 
 
 

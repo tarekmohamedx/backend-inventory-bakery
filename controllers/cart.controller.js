@@ -5,6 +5,7 @@ const User = require('../models/users.model');
 const { verifyToken } = require('../utils/jwttoken.maneger');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+const authMiddlewere = require('../middlewere/authentication.middlewere');
 
 
 
@@ -79,7 +80,7 @@ router.post('/cart/add', verifyToken, async (req, res) => {
 
 
   // get user cart
-  router.get('/user/:id', async (req, res) => {
+  router.get('/user/:id', authMiddlewere,async (req, res) => {
     try {
       const userId = req.params.id;
       const cartData = await cartService.getUserCart(userId);

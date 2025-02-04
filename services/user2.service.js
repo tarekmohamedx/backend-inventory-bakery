@@ -7,12 +7,8 @@ const UserService = {
     /*
     in register will catch some of attributes 
     first_name, last_name, email, password,
-
-    
-    
-    
-    
     */
+   
     try {
       // Generate salt
       const salt = await bcrypt.genSalt(10);
@@ -31,7 +27,7 @@ const UserService = {
         email: userData.email,
         password: hashedPassword,
         salt,
-        role: "Customer",
+        role: userData.role,
         cartItems: [], // Use cartItems instead of cartitems
         orderIds: [],
         status: "active",

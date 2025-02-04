@@ -4,9 +4,9 @@ const morgan = require("morgan");
 const fileUpload = require("express-fileupload");
 const fs = require("fs");
 const path = require("path");
-const cartRouter = require('./routes/cart.route');
 const session = require("express-session");
-
+const cartController = require('./controllers/cart.controller')
+const adminController = require('./controllers/admin.controller')
 
 
 const app = express();
@@ -30,7 +30,6 @@ app.use(
 );
 
 
-
 // ✅ Configure session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET || '1a4f293648fac623dff0678b30f9f142', // Change this to a secure secret
@@ -51,6 +50,11 @@ app.get('/check-session', (req, res) => {
     res.status(401).json({ message: "No token in session" });
   }
 });
+
+
+//routing
+app.use('/api/cart', cartController);
+app.use('/api/admin', adminController);
 
 
 // controller registrations

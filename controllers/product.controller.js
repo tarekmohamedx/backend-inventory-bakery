@@ -1,16 +1,15 @@
-
 const  productService  = require('../services/product.service');
 const { getLastProducts } = require('../repos/product.repo');
 const mongoose = require('mongoose');
 const Product = require("../models/Product.model");
-// const productService = require('../services/product.service');
+const express = require("express");
 const ImageKit = require("imagekit");
+
 const imagekit = new ImageKit({
   publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
   urlEndpoint: process.env.IMAGEKIT_ENDPOINT_URL,
 });
-
 module.exports = (() => {
     const router = require("express").Router();
 

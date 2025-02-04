@@ -22,7 +22,7 @@ const registerUser = async (userbody) => {
     return { token };
   } catch (error) {
     console.error("Error registering user:", error.message);
-    throw new Error("Failed to register user");
+    throw new Error("Failed to register user, Registerd");
   }
 };
 
@@ -32,9 +32,11 @@ const loginUser = async ({ email, password }) => {
     const user = await authenticateUser(email, password);
 
     const claims = {
-      username: `${user.first_name} ${user.last_name}`,
+      // username: `${user.first_name} ${user.last_name}`,
+      userId: user._id,
       email: user.email,
       user_type: user.user_type,
+      role: user.role
     };
 
     const token = signToken({ claims });
@@ -49,7 +51,7 @@ const loginUser = async ({ email, password }) => {
 // this will take a token and decode it 
   const decode =  async ({token}) =>{
 try {
-  const decoded =  jwt.decode(token); // Decodes the token without verifying it
+  const decoded =  await jwt.decode(token); // Decodes the token without verifying it
   return decoded; // This will contain the claims like userId
 } catch (err) {
   console.error("Error decoding token:", err);
