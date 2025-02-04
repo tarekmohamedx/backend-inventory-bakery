@@ -1,9 +1,7 @@
 const bcrypt = require("bcrypt");
-<<<<<<< HEAD
+
 const {signToken} = require('../utils/jwttoken.maneger');
-=======
-const { signToken } = require("../utils/jwttoken.maneger");
->>>>>>> 63b357620e573ef993d9bd82f5aae18db10698ce
+
 const { createUser, authenticateUser } = require("../services/user2.service");
 const UserService = require("../services/user2.service");
 const jwt = require("jsonwebtoken");
