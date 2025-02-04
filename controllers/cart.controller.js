@@ -89,6 +89,7 @@ router.post('/cart/add', verifyToken, async (req, res) => {
         status: httpStatusText.SUCCESS,
         data: cartData,
       });
+      
     } catch (err) {
       return res.status(err.statusCode || 500).json({
         status: httpStatusText.ERROR,

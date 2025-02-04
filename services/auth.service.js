@@ -4,6 +4,7 @@ const {signToken} = require('../utils/jwttoken.maneger');
 
 const { createUser, authenticateUser } = require("../services/user2.service");
 const UserService = require("../services/user2.service");
+const {APP_CONFIG} = require("../config/db");
 const jwt = require("jsonwebtoken");
 // Register user [after register will return a token]
 const registerUser = async (userbody) => {
@@ -31,13 +32,20 @@ const loginUser = async ({ email, password }) => {
   try {
     const user = await authenticateUser(email, password);
 
+    // const claims = {
+    //   // username: `${user.first_name} ${user.last_name}`,
+    //   email: user.email,
+    //   user_type: user.user_type,
+    // };
     const claims = {
-      // username: `${user.first_name} ${user.last_name}`,
-      userId: user._id,
+      userid: user._id,
+      // username: `${user.firstName} ${user.lastName}`, // Combine first and last names
+      // firstName: user.firstname,
+      // lastName: user.lastname,
       email: user.email,
       user_type: user.user_type,
-      role: user.role
     };
+
 
     const token = signToken({ claims });
 
@@ -49,18 +57,18 @@ const loginUser = async ({ email, password }) => {
 };
 
 // this will take a token and decode it 
-  const decode =  async ({token}) =>{
-try {
-  const decoded =  await jwt.decode(token); // Decodes the token without verifying it
-  return decoded; // This will contain the claims like userId
-} catch (err) {
-  console.error("Error decoding token:", err);
-  return null;
-}
-  };
+//   const decode =  async ({token}) =>{
+// try {
+//   const decoded =  jwt.decode(token); // Decodes the token without verifying it
+//   return decoded; // This will contain the claims like userId
+// } catch (err) {
+//   console.error("Error decoding token:", err);
+//   return null;
+// }
+//   };
 
 module.exports = {
   registerUser,
   loginUser,
-  decode
+  // decode
 };
