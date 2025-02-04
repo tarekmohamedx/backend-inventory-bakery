@@ -1,5 +1,7 @@
 const bcrypt = require("bcrypt");
-const { signToken } = require("../utils/jwttoken.maneger");
+
+const {signToken} = require('../utils/jwttoken.maneger');
+
 const { createUser, authenticateUser } = require("../services/user2.service");
 const UserService = require("../services/user2.service");
 const jwt = require("jsonwebtoken");
