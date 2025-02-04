@@ -5,6 +5,7 @@ const fileUpload = require("express-fileupload");
 const fs = require("fs");
 const path = require("path");
 const cartRouter = require('./routes/cart.route')
+const adminController = require('./controllers/admin.controller')
 
 
 const app = express();
@@ -25,6 +26,7 @@ app.use(
 
 //routing
 app.use('/api/cart', cartRouter);
+app.use('/api/admin', adminController);
 
 
 // controller registrations
