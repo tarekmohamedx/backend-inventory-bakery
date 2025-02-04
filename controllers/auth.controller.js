@@ -10,13 +10,14 @@ const routes = {
       // Call registerUser service to handle user registration and get the token
       const { token } = await registerUser(userbody);
 
+      req.session.token = token;
       // Send success response with the token
       res.status(201).json({ success: true, token });
     } catch (error) {
       console.error("Error in register:", error.message);
       res
         .status(500)
-        .json({ message: error.message || "Failed to register user" });  
+        .json({ message:error.message || "Failed to register user" });  
     }
   },
 
@@ -40,16 +41,16 @@ const routes = {
     // decoding:async(req , res) => {
     //   try{
 
-    //     const token = req.body.token;
-    //     const s = await decode({token});
-    //     res.status(200).json({s});
-    //   }catch(error){
-    //      res
-    //      .status(500)
-    //       .json({ message: error.message || "error when decoding" });
-    //   }
-    // }
-};
+      //   const token = req.body.token;
+      //   const { s }= await decode({token});
+      //   res.status(200).json({s});
+      // }catch(error){
+      //    res
+      //      .status(500)
+      //      .json({ message: error.message || "error when decoding" });
+      // }
+    }
+
 
 router.post("/auth/register", routes.register);
 router.post("/auth/login", routes.login);

@@ -1,5 +1,7 @@
 const bcrypt = require("bcrypt");
-const { signToken } = require("../utils/jwttoken.maneger");
+
+const {signToken} = require('../utils/jwttoken.maneger');
+
 const { createUser, authenticateUser } = require("../services/user2.service");
 const UserService = require("../services/user2.service");
 const {APP_CONFIG} = require("../config/db");
@@ -21,7 +23,7 @@ const registerUser = async (userbody) => {
     return { token };
   } catch (error) {
     console.error("Error registering user:", error.message);
-    throw new Error("Failed to register user");
+    throw new Error("Failed to register user, Registerd");
   }
 };
 
@@ -30,16 +32,22 @@ const loginUser = async ({ email, password }) => {
   try {
     const user = await authenticateUser(email, password);
 
-    const claim = {
+    // const claims = {
+    //   // username: `${user.first_name} ${user.last_name}`,
+    //   email: user.email,
+    //   user_type: user.user_type,
+    // };
+    const claims = {
       userid: user._id,
       // username: `${user.firstName} ${user.lastName}`, // Combine first and last names
       // firstName: user.firstname,
       // lastName: user.lastname,
       email: user.email,
-      
+      user_type: user.user_type,
     };
 
-    const token = signToken({ claim });
+
+    const token = signToken({ claims });
 
     return { token };
   } catch (error) {
@@ -51,10 +59,8 @@ const loginUser = async ({ email, password }) => {
 // this will take a token and decode it 
 //   const decode =  async ({token}) =>{
 // try {
-//   const sk = APP_CONFIG.mongosec;
-//   // const decoded =  jwt.decode(token); // Decodes the token without verifying it
-//   const decode = await jwt.verify(sk,token);  
-//   return decode; // This will contain the claims like userId
+//   const decoded =  jwt.decode(token); // Decodes the token without verifying it
+//   return decoded; // This will contain the claims like userId
 // } catch (err) {
 //   console.error("Error decoding token:", err);
 //   return null;

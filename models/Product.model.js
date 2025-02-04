@@ -37,11 +37,11 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     default: false
     },
-    categoryid: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category',
-        required: true
-    },
+    // categoryid: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Category',
+    //     required: false
+    // },
     createdAt: {
         type: Date,
         default: Date.now },
