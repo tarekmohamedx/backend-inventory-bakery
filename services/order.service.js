@@ -10,8 +10,8 @@ const orderservice = {
         customerId: orderData.customerId,
         totalAmount: orderData.totalAmount,
         shippingAddress: {
-          governorate: orderData.governorate,
-          city: orderData.city,
+          governorate: orderData.shippingAddress.governorate,
+          city: orderData.shippingAddress.city,
         },
         customername:{
             firstname:orderData.firstname,
