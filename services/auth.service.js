@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-// const { signToken } = require("../utils/jwttoken.manager");
+const { signToken } = require("../utils/jwttoken.maneger");
 const { createUser, authenticateUser } = require("../services/user2.service");
 const UserService = require("../services/user2.service");
 // Register user [after register will return a token]
@@ -21,25 +21,25 @@ const registerUser = async (userbody) => {
   }
 };
 
-// // Login user
-// const loginUser = async ({ email, password }) => {
-//   try {
-//     const user = await authenticateUser(email, password);
+// Login user
+const loginUser = async ({ email, password }) => {
+  try {
+    const user = await authenticateUser(email, password);
 
-//     const claims = {
-//       username: `${user.first_name} ${user.last_name}`,
-//       email: user.email,
-//       user_type: user.user_type,
-//     };
+    const claims = {
+      username: `${user.first_name} ${user.last_name}`,
+      email: user.email,
+      user_type: user.user_type,
+    };
 
-//     const token = signToken({ claims });
+    const token = signToken({ claims });
 
-//     return { token };
-//   } catch (error) {
-//     console.error("Error logging in user:", error.message);
-//     throw new Error("Failed to login user");
-//   }
-// };
+    return { token };
+  } catch (error) {
+    console.error("Error logging in user:", error.message);
+    throw new Error("Failed to login user");
+  }
+};
 
 module.exports = {
   registerUser,
