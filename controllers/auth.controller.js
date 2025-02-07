@@ -41,3 +41,4 @@ const routes = {
 router.post("/auth/register", routes.register);
 
 module.exports = router;
+
