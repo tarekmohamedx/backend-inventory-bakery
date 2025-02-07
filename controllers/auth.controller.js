@@ -50,7 +50,7 @@ const routes = {
     //        .json({ message: error.message || "error when decoding" });
     //   }
     // }
-
+}
 
 router.post("/auth/register", routes.register);
 router.post("/auth/login", routes.login);
