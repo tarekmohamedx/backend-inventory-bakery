@@ -38,12 +38,13 @@ const loginUser = async ({ email, password }) => {
     //   user_type: user.user_type,
     // };
     const claims = {
-      userid: user._id,
+      userId: user._id,
       // username: `${user.firstName} ${user.lastName}`, // Combine first and last names
       // firstName: user.firstname,
       // lastName: user.lastname,
       email: user.email,
       user_type: user.user_type,
+      role: user.role
     };
 
 
