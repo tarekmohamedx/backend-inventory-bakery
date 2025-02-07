@@ -44,7 +44,7 @@ module.exports = (() => {
 router.post('/cart/add', verifyToken, async (req, res) => {
   try {
     const { productId, quantity, price } = req.body;
-    const userId = req.user.userid; // Use correct userId from token
+    const userId = req.user.userId; // Use correct userId from token
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ message: "Invalid productId format" });
