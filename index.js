@@ -65,7 +65,7 @@ app.get('/check-session', (req, res) => {
 //routing
 app.use('/api/cart', cartController);
 app.use('/api/admin', adminController);
-app.use('/api/cart', cartRouter);
+//app.use('/api/cart', cartRouter);
 app.use('/api/seller', sellerRouter); 
 
 
