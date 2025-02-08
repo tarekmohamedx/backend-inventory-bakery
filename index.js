@@ -5,8 +5,7 @@ const fileUpload = require("express-fileupload");
 const fs = require("fs");
 const path = require("path");
 const cartRouter = require('./routes/cart.route')
-
-
+const sellerRouter =require("./controllers/seller.controller.js");
 
 const app = express();
 app.use(cors());
@@ -34,6 +33,7 @@ app.use(
 
 //routing
 app.use('/api/cart', cartRouter);
+app.use('/api/seller', sellerRouter); 
 
 
 // controller registrations
@@ -51,5 +51,9 @@ for (const controllerFile of controllersDirectory) {
 }
 
 
+
+
+
 // export point
 module.exports = app;
+//export default app;
