@@ -60,6 +60,10 @@ return await orderRepository.getallorder();
 throw new Error(error.message);
 }
   },
+
+  getorderbyid:async(orderid) =>{
+return await orderRepository.getorderbyid(orderid);
+  }
 };
 
 module.exports = orderservice;
