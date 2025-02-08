@@ -36,7 +36,6 @@ module.exports.decodedToken = ({ token }) => {
 // };
 
 
-
 module.exports.verifyToken = (req, res, next) => {
   const authHeader = req.header('Authorization'); // Get the Authorization header
 

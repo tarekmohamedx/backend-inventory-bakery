@@ -41,42 +41,43 @@ module.exports = (() => {
 
 
   // Add product to cart
-router.post('/cart/add', verifyToken, async (req, res) => {
-  try {
-    const { productId, quantity, price } = req.body;
-    const userId = req.user.userId; // Use correct userId from token
-
-    if (!mongoose.Types.ObjectId.isValid(productId)) {
-      return res.status(400).json({ message: "Invalid productId format" });
+  router.post('/cart/add', verifyToken, async (req, res) => {
+    try {
+      const { productId, quantity, price } = req.body;
+      const userId = req.user.userId; // ✅ Use "userId" (matches decoded token)
+  
+      if (!mongoose.Types.ObjectId.isValid(productId)) {
+        return res.status(400).json({ message: "Invalid productId format" });
+      }
+  
+      let user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      // Convert productId to ObjectId before inserting into MongoDB
+      const objectIdProduct = new mongoose.Types.ObjectId(productId);
+  
+      const existingItem = user.cartItems.find(item => item.productId.equals(objectIdProduct));
+      if (existingItem) {
+        existingItem.quantity += quantity;
+      } else {
+        user.cartItems.push({ productId: objectIdProduct, quantity, price });
+      }
+  
+      await user.save();
+  
+      const token = jwt.sign({ userId: user._id, cartItems: user.cartItems }, process.env.JWT_SECRET, {
+        expiresIn: '7d',
+      });
+  
+      res.json({ message: 'Cart updated successfully', cartItems: user.cartItems, token });
+    } catch (error) {
+      console.error('Error updating cart:', error);
+      res.status(500).json({ message: "Server error" });
     }
-
-    let user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Convert productId to ObjectId before inserting into MongoDB
-    const objectIdProduct = new mongoose.Types.ObjectId(productId);
-
-    const existingItem = user.cartItems.find(item => item.productId.equals(objectIdProduct));
-    if (existingItem) {
-      existingItem.quantity += quantity;
-    } else {
-      user.cartItems.push({ productId: objectIdProduct, quantity, price });
-    }
-
-    await user.save();
-
-    const token = jwt.sign({ userid: user._id, cartItems: user.cartItems }, process.env.JWT_SECRET, {
-      expiresIn: '7d',
-    });
-
-    res.json({ message: 'Cart updated successfully', cartItems: user.cartItems, token });
-  } catch (error) {
-    console.error('Error updating cart:', error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+  });
+  
 
 
   // get user cart
