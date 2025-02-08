@@ -14,8 +14,8 @@ const orderservice = {
           city: orderData.shippingAddress.city,
         },
         customername:{
-            firstname:orderData.customername.firstname,
-            lastname:orderData.customername.lastname,
+            firstname:orderData.firstname,
+            lastname:orderData.lastname,
         },
         paymentMethod: orderData.paymentMethod,
         addressdetails: orderData.addressdetails,

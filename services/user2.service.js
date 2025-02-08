@@ -7,16 +7,16 @@ const UserService = {
     /*
     in register will catch some of attributes 
     first_name, last_name, email, password,
-
-    
-    
-    
-    
     */
+   
     try {
       // Generate salt
       const salt = await bcrypt.genSalt(10);
-
+      // put restriction on mail to input valid mail 
+  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+  if (!emailRegex.test(userData.email)) {
+    throw new Error("Invalid email format");
+  }
       // Hash the password with the generated salt
       const hashedPassword = await bcrypt.hash(userData.password, salt);
 
@@ -27,7 +27,7 @@ const UserService = {
         email: userData.email,
         password: hashedPassword,
         salt,
-        role: "Customer",
+        role: userData.role,
         cartItems: [], // Use cartItems instead of cartitems
         orderIds: [],
         status: "active",
@@ -42,8 +42,8 @@ const UserService = {
       const claim = {
         userid: createdUser._id,
         username: `${createdUser.first_name} ${createdUser.last_name}`, // Combine first and last names
-        first_name: createdUser.first_name,
-        last_name: createdUser.last_name,
+        first_name: createdUser.firstName,
+        last_name: createdUser.lastName,
         email: createdUser.email,
         password: hashedPassword,
         salt,
@@ -59,11 +59,11 @@ const UserService = {
       throw new Error("Failed to create user", error.message);
     }
   },
-  getUserById: async (userId) => {
-    const user = await UserRepository.findUserById(userId);
-    if (!user) throw new Error("User not found");
-    return user;
-  },
+  // getUserById: async (userId) => {
+  //   const user = await UserRepository.findUserById(userId);
+  //   if (!user) throw new Error("User not found");
+  //   return user;
+  // },
   // this method will return user by email
   // need to set some of validation cases
   //
@@ -80,6 +80,11 @@ const UserService = {
   },
 
   // user it in login
+  /*
+  in login i get password will pass it in param with pass after get it from user 
+
+  
+  */
   authenticateUser: async (email, password) => {
     const user = await UserRepository.findUserByEmail(email);
     if (!user) throw new Error("Invalid email or password");

@@ -13,6 +13,8 @@ router.delete("/clear/:id", cartController.clearCart);
 router.get('/user/:id', cartController.getUserCart)
 
 
+router.get("/users/email", usersController.getUserByEmail);
 
 
-module.exports = router;
+
+// module.exports = router;

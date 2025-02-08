@@ -20,7 +20,11 @@ module.exports.getUserById = async (userId) => {
       throw error;
     }
 };
-  
+module.exports.getUserByemail = async (email) => {
+    return await User.findOne({email:email});
+    
+};
+
   // create user
 module.exports.createUser = async (userData) => {
     try {
