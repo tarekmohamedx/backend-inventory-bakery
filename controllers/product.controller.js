@@ -1,6 +1,4 @@
 const express = require("express");
-const productService = require("../services/product.service");
-
 const  productService  = require('../services/product.service');
 const { getLastProducts } = require('../repos/product.repo');
 const ImageKit = require("imagekit");
