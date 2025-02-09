@@ -54,7 +54,12 @@ const productSchema = new mongoose.Schema({
         type: [String]
     },
     sellerName:{type:String},
-    accentColor: { type: String, default: '#0B374D' }
+    accentColor: { type: String, default: '#0B374D' },
+    status: {
+        type: String,
+        enum: ['Pending', 'Approved', 'Rejected', 'Out of Stock'],
+        default: 'Pending'
+    }
 });
 
 
