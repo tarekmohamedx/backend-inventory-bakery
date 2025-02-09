@@ -19,6 +19,7 @@ const routes = {
         .status(500)
         .json({ message:error.message || "Failed to register user" });  
     }
+
   },
 
     login: async (req, res) => {
