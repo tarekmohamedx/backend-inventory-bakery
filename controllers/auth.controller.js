@@ -57,3 +57,4 @@ router.post("/auth/register", routes.register);
 router.post("/auth/login", routes.login);
 // router.get('/auth/decode',routes.decoding);
 module.exports = router;
+
