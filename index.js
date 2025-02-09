@@ -7,8 +7,6 @@ const path = require("path");
 const session = require("express-session");
 const cartController = require('./controllers/cart.controller')
 const adminController = require('./controllers/admin.controller')
-
-const cartRouter = require('./routes/cart.route')
 const sellerRouter =require("./controllers/seller.controller.js");
 
 const app = express();
@@ -65,7 +63,6 @@ app.get('/check-session', (req, res) => {
 //routing
 app.use('/api/cart', cartController);
 app.use('/api/admin', adminController);
-//app.use('/api/cart', cartRouter);
 app.use('/api/seller', sellerRouter); 
 
 

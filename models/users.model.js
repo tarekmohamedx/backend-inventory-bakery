@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: {
     type: String,
-    enum: ['Customer', 'Manager', 'SalesClerk', 'Cashier', 'Supplier', 'Admin'], // replace cashier
+    enum: ['Customer', 'Manager', 'Seller', 'Cashier', 'Supplier', 'Admin'],
     required: true,
     default: 'Customer'
   },
