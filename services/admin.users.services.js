@@ -25,7 +25,9 @@ const removeUser = async (userId)=>{
         const userRole = await adminUserRepo.getUserRole(userId);
         if(userRole == 'Customer')
            return await removeCustomer(userId);
-        // else if(userRole == '')
+        else if(userRole == 'Admin'){
+            throw new Error("You cannot remove your own role");
+        }
         
        
         
