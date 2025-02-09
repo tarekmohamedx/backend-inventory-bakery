@@ -8,6 +8,15 @@ const addressSchema = new mongoose.Schema({
       governorate: { type: String, required: true },
 })
 
+const SellerSchema = new mongoose.Schema({
+  storeName: { type: String },
+  products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+  totalSales: { type: Number, default: 0 },
+  totalProfits: { type: Number, default: 0 },
+  totalProducts: { type: Number, default: 0 },
+  rating: { type: Number, min: 0, max: 5, default: 0 }
+}, { _id: false });
+
 const userSchema = new mongoose.Schema({
   username: { type: String},
   email: { type: String, required: true, unique: true },
@@ -46,7 +55,8 @@ const userSchema = new mongoose.Schema({
     default: []
   },
   createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  updatedAt: { type: Date, default: Date.now },
+  seller: SellerSchema
 
 }, { timestamps: true });
  
