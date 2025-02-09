@@ -1,6 +1,6 @@
 
-const Seller =require( '../models/seller.model');
-
+const Seller =require( '../models/seller.model').default;
+console.log(Seller);
 
 //get all sellers
  const getsellers = async()=>{

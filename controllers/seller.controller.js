@@ -63,6 +63,10 @@ const sellerService = require("../services/seller.service");
     router.get('/seller-stats', async (req, res) => {
         try {
             const sellers = await sellerService.getSellers();
+            console.log("Fetched sellers:", sellers);
+    if (!sellers || !Array.isArray(sellers)) {
+      throw new Error("Sellers data is not in expected array format");
+    }
             const stats = sellers.map(seller => ({
                 storeName: seller.storeName,
                 totalSales: seller.totalSales,
@@ -70,6 +74,7 @@ const sellerService = require("../services/seller.service");
             }));
             res.status(200).json(stats);
         } catch (error) {
+            console.error("Error in /seller-stats:", error);
             res.status(500).json({ error: error.message });
         }
     });

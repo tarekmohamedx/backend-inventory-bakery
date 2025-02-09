@@ -53,6 +53,7 @@ const productSchema = new mongoose.Schema({
     images: {
         type: [String]
     },
+    sellerName:{type:String},
     accentColor: { type: String, default: '#0B374D' }
 });
 
