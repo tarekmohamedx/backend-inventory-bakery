@@ -15,9 +15,9 @@ const getUsers = async (req, res)=>{
 const getUserByRole = async (req, res)=>{
     try{
         const {role} = req.params;
-        const usersRoles = await adminService.getUserByRole(role);
+        const users = await adminService.getUserByRole(role);
         return res.status(200).json({
-            data: usersRoles
+           users
         })    
     }
     catch(err){
@@ -86,7 +86,7 @@ router.get('/dashboard', async (req, res) => {
     res.status(200).json({ success: true, data: "Admin Dashboard" });
 });
 
-router.get('/users',verifyToken, authorize('Admin') ,getUsers);
+router.get('/users', verifyToken, authorize('Admin') ,getUsers);
 router.get('/users/:role', getUserByRole)
 router.get('/user/:userId', getUserById)
 router.delete('/users/:userId', removeUser)
