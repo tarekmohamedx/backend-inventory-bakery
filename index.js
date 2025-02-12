@@ -6,10 +6,10 @@ const fs = require("fs");
 const path = require("path");
 const cartRouter = require('./routes/cart.route');
 const session = require("express-session");
+
 const cartController = require('./controllers/cart.controller')
 const adminController = require('./controllers/admin.controller')
 const sellerRouter =require("./controllers/seller.controller.js");
-
 
 
 const app = express();
@@ -65,10 +65,12 @@ app.get('/check-session', (req, res) => {
 
 app.use('/cart', cartController);
 
+
 //routing
 app.use('/api/cart', cartController);
 app.use('/api/admin', adminController);
 app.use('/api/seller', sellerRouter); 
+
 
 
 // controller registrations
