@@ -6,6 +6,7 @@ const orderRepository = {
     return Order;
   },
 
+
   // return all orders to admin 
 
   getallorder: async() => {
@@ -20,6 +21,7 @@ getorderbyid:async(orderid) => {
   // need to return orders related this user
   // already i have a userid from claims from token
   // to display it in user profile
+
   findorderbuuserid: async (userid) => {
     return await order.find({ customerId: userid });
   },
