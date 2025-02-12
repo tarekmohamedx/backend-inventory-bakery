@@ -1,6 +1,8 @@
 const userRepo = require('../repos/users.repo');
 const productRepo = require('../repos/product.repo');
 const { calculateTotal } = require('../utils/cartUtils');
+const mongoose = require("mongoose");
+// const User = require("../models/users.model");
 
 exports.addToCart = async (userId, productId, quantity) => {
   // catch id from token after decode it rom session 
@@ -18,8 +20,6 @@ exports.addToCart = async (userId, productId, quantity) => {
     console.log('price case');   
     
   }
-  
-
   await user.save();
   return user.cartItems;
 };
@@ -66,6 +66,7 @@ exports.getUserCart = async (userId) => {
     return user.cartItems;
   };
 
+
   exports.removeCartItem = async (userId, itemId) => {
     const user = await userRepo.getUserById(userId);
     if (!user) {
@@ -88,6 +89,7 @@ exports.getUserCart = async (userId) => {
     return user.cartItems;
   };
 
+
   exports.clearCart = async (userId) => {
     const user = await userRepo.getUserById(userId);
     if (!user) {
@@ -102,3 +104,43 @@ exports.getUserCart = async (userId) => {
   
     return user.cartItems;
   };
+
+  //---------------------------- Merge Guest Cart Service ------------------
+
+// Merge guest cart with the user's cart
+exports.mergeGuestCart = async (userId, guestCart) => {
+  try {
+    const user = await userRepo.getUserById(userId);  // Fetch user by ID
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    let updatedCart = [...user.cartItems];  // Start with the existing cart items
+
+    // Merge guest cart items into the user's cart
+    guestCart.forEach((guestItem) => {
+      const guestProductId = mongoose.Types.ObjectId.isValid(guestItem.productId)
+        ? new mongoose.Types.ObjectId(guestItem.productId)  // Convert to ObjectId
+        : guestItem.productId;
+
+      const existingItem = updatedCart.find((item) =>
+        item.productId.toString() === guestProductId.toString()
+      );
+
+      if (existingItem) {
+        existingItem.quantity += guestItem.quantity; // Merge quantity if item exists
+      } else {
+        updatedCart.push({ ...guestItem, productId: guestProductId }); // Add new item to cart
+      }
+    });
+
+    // Save the merged cart to the user model
+    user.cartItems = updatedCart;
+    await user.save();
+
+    return updatedCart;  // Return the updated cart
+  } catch (error) {
+    console.error("Error merging guest cart:", error);
+    throw error;
+  }
+};
