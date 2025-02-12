@@ -6,8 +6,10 @@ const fs = require("fs");
 const path = require("path");
 const cartRouter = require('./routes/cart.route');
 const session = require("express-session");
-const cartController = require("./controllers/cart.controller");
 
+const cartController = require('./controllers/cart.controller')
+const adminController = require('./controllers/admin.controller')
+const sellerRouter =require("./controllers/seller.controller.js");
 
 
 const app = express();
@@ -22,9 +24,17 @@ app.use(express.urlencoded({ extended: true }));
 // middlewares
 app.use(morgan("common"));
 
+const bodyParser = require("body-parser");
+
+// Increase JSON body limit
+app.use(bodyParser.json({ limit: "100mb" }));
+app.use(bodyParser.urlencoded({ limit: "100mb", extended: true }));
+
+
 app.use(
   fileUpload({
-    limits: { fileSize: 50 * 1024 * 1024 },
+    limits: { fileSize: 100 * 1024 * 1024 },
+    tempFileDir: "/tmp/",
     useTempFiles: false,
     preserveExtension: true,
   })
@@ -56,6 +66,12 @@ app.get('/check-session', (req, res) => {
 app.use('/cart', cartController);
 
 
+//routing
+app.use('/api/cart', cartController);
+app.use('/api/admin', adminController);
+app.use('/api/seller', sellerRouter); 
+
+
 
 // controller registrations
 const controllersDirPath = path.join(__dirname, "controllers");
@@ -72,5 +88,9 @@ for (const controllerFile of controllersDirectory) {
 }
 
 
+
+
+
 // export point
 module.exports = app;
+//export default app;
