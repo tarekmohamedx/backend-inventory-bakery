@@ -1,5 +1,8 @@
 const { registerUser, loginUser , decode } = require("../services/auth.service");
 const router = require("express").Router();
+const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
+const { mergeGuestCart } = require('../services/cart.service')
 
 const routes = {
   register: async (req, res) => {
@@ -19,14 +22,19 @@ const routes = {
         .status(500)
         .json({ message:error.message || "Failed to register user" });  
     }
+
   },
 
     login: async (req, res) => {
       try {
-        const { email, password } = req.body; // Directly use the entire body as user credentials
+        const { email, password , guestCart = []} = req.body; // Directly use the entire body as user credentials
 
         // Call loginUser service to handle user login and get the token
-        const { token } = await loginUser({ email, password });
+        const { token , user} = await loginUser({ email, password });
+
+      // **🔄 Merge Guest Cart with User's Cart**
+      const updatedCart = await mergeGuestCart(user._id, guestCart);  // Call mergeGuestCart
+      console.log("✅ Merged Cart:", updatedCart);
 
         // Send success response with the token
         res.status(200).json({ token });
@@ -38,19 +46,9 @@ const routes = {
       }
     },
 
-    // decoding:async(req , res) => {
-    //   try{
 
-    //     const token = req.body.token;
-    //     const { s }= await decode({token});
-    //     res.status(200).json({s});
-    //   }catch(error){
-    //      res
-    //        .status(500)
-    //        .json({ message: error.message || "error when decoding" });
-    //   }
-    // }
 }
+
 
 router.post("/auth/register", routes.register);
 router.post("/auth/login", routes.login);

@@ -1,5 +1,6 @@
 // const express = require('express');
 // const cartController = require('../controllers/cart.controller');
+// const usersController = require('../controllers/users.controller');
 
 // const router = express.Router();
 
@@ -11,7 +12,7 @@
 // router.delete("/clear/:id", cartController.clearCart);
 
 // router.get('/user/:id', cartController.getUserCart)
-// router.post('/cart/add', cartController)
+// router.post('/cart/add', cartController.addToCart)
 
 // router.get("/users/email", usersController.getUserByEmail);
 
