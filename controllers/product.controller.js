@@ -4,8 +4,6 @@ const { getLastProducts } = require('../repos/product.repo');
 const mongoose = require('mongoose');
 const Product = require("../models/Product.model");
 const express = require("express");
-
-const  productService  = require('../services/product.service');
 const { getLastProducts } = require('../repos/product.repo');
 const ImageKit = require("imagekit");
 
