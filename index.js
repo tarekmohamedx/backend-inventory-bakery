@@ -70,6 +70,8 @@ app.use('/cart', cartController);
 app.use('/api/cart', cartController);
 app.use('/api/admin', adminController);
 app.use('/api/seller', sellerRouter); 
+const profileRouter  = require('./controllers/userProfile.controller.js');
+app.use('/api/users', profileRouter);
 
 
 

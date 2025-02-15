@@ -339,4 +339,5 @@ module.exports = (() => {
 
 
   return router;
+})
 })();
