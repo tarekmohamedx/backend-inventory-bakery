@@ -37,11 +37,11 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     default: false
     },
-    categoryid: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category',
-        required: true
-    },
+    // categoryid: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Category',
+    //     required: false
+    // },
     createdAt: {
         type: Date,
         default: Date.now },
@@ -53,7 +53,13 @@ const productSchema = new mongoose.Schema({
     images: {
         type: [String]
     },
-    accentColor: { type: String, default: '#0B374D' }
+    sellerName:{type:String},
+    accentColor: { type: String, default: '#0B374D' },
+    status: {
+        type: String,
+        enum: ['Pending', 'Approved', 'Rejected', 'Out of Stock'],
+        default: 'Pending'
+    }
 });
 
 

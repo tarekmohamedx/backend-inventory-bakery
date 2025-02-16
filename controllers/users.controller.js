@@ -5,7 +5,7 @@ module.exports = (() => {
     const router = require("express").Router();
   
     // get users
-    router.get("/users", async (req, res, next) => {
+    router.get("/users", async (req, res) => {
       try{
         const users = await userService.getUsers();
         res.status(200).json(users);
@@ -15,7 +15,7 @@ module.exports = (() => {
     });
   
   
-    // get user detail
+   // get user detail
     router.get("/users/:id", async (req, res) => {
       try {
         const user = await userService.getUserById(req.params.id);
@@ -28,8 +28,23 @@ module.exports = (() => {
         res.status(500).json({ error: error.message });
       }
     });
-    
-  
+
+
+    // router.get("/users/:email", async (req, res) => {
+    //   try {
+    //     // const email = req.body.email; 
+    //     const user = await userService.getUserByemail(req.params.email);
+    //     if (!user) {
+    //       return res.status(404).json({ error: "User not found" });
+    //     }
+    //     res.status(200).json(user);
+    //   } catch (error) {
+    //     console.error("Error fetching user details:", error);
+    //     res.status(500).json({ error: error.message });
+    //   }
+    // });
+
+
     // create user
     router.post("/users", async(req, res, next) => {
       try{
@@ -89,3 +104,24 @@ module.exports = (() => {
     return router;
   })();
   
+module.exports.getUserByEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || typeof email !== "string") {
+      return res.status(400).json({ error: "Invalid or missing email." });
+    }
+
+    const user = await userService.getUserByemail(email);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching user by email:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
