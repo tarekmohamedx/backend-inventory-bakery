@@ -101,9 +101,27 @@ router.get("/last-products", async (req, res) => {
               return res.status(400).json({ error: "At least one image file is required" });
             }
 
+
+    const status = "Pending";
+    const newProduct = await productService.createProduct({
+      name: req.body.name,
+      description: req.body.description,
+      price: parsedPrice,
+      category: req.body.category,
+      previousprice: parsedPreviousPrice,
+      sales: parsedSales,
+      stock: parsedStock,
+      flavor: req.body.flavor,
+      discounted: parsedDiscounted,
+      categoryid: parsedCategoryId,
+      images: uploadedImages,
+      status:status,
+      
+    });
             // Ensure `req.files.images` is an array
             // const uploadedFiles = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
             const uploadedFiles = req.files?.images? (Array.isArray(req.files.images) ? req.files.images : [req.files.images]): [];
+
 
 
             // Upload images to ImageKit
