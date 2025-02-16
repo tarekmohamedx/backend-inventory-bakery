@@ -102,6 +102,7 @@ router.post("/products", async (req, res) => {
       })
     );
 
+    const status = "Pending";
     const newProduct = await productService.createProduct({
       name: req.body.name,
       description: req.body.description,
@@ -114,6 +115,8 @@ router.post("/products", async (req, res) => {
       discounted: parsedDiscounted,
       categoryid: parsedCategoryId,
       images: uploadedImages,
+      status:status,
+      
     });
 
     res.status(201).json(newProduct);

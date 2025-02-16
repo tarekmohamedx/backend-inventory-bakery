@@ -20,6 +20,7 @@ module.exports.decodedToken = ({ token }) => {
 };
 
 
+
 module.exports.verifyToken = (req, res, next) => {
   const token = req.header('Authorization');
   if (!token) {
