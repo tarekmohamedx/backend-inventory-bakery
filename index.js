@@ -4,10 +4,13 @@ const morgan = require("morgan");
 const fileUpload = require("express-fileupload");
 const fs = require("fs");
 const path = require("path");
+const cartRouter = require('./routes/cart.route');
 const session = require("express-session");
+
 const cartController = require('./controllers/cart.controller')
 const adminController = require('./controllers/admin.controller')
 const sellerRouter =require("./controllers/seller.controller.js");
+
 
 const app = express();
 app.use(cors({
@@ -38,6 +41,7 @@ app.use(
 );
 
 
+
 // ✅ Configure session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET || '1a4f293648fac623dff0678b30f9f142', // Change this to a secure secret
@@ -47,7 +51,7 @@ app.use(session({
 }));
 
 app.use((req, res, next) => {
-  console.log("Session Data:", req.session); 
+  console.log("Session Data:", req.session);
   next();
 });
 
@@ -59,11 +63,14 @@ app.get('/check-session', (req, res) => {
   }
 });
 
+app.use('/cart', cartController);
+
 
 //routing
 app.use('/api/cart', cartController);
 app.use('/api/admin', adminController);
 app.use('/api/seller', sellerRouter); 
+
 
 
 // controller registrations

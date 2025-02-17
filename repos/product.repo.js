@@ -26,8 +26,8 @@ module.exports.getProductById = async (ProductId) => {
 module.exports.getTopProducts = async()=>{
     try{
 const topProducts = await Product.find({})
-.sort({sales: -1}) //(descending order)
- .limit(5);       // limit 5 product to appear
+.sort({sales: -1})
+ .limit(5);     
 return topProducts;
 
     }catch(error){
