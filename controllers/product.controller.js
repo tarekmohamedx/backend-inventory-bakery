@@ -1,7 +1,5 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const productService = require("../services/product.service");
-const { getLastProducts } = require("../repos/product.repo");
 const Product = require("../models/Product.model");
 const ImageKit = require("imagekit");
 
@@ -38,11 +36,11 @@ router.get("/products/:id", async (req, res) => {
   }
 });
 
-// Get top products (best seller products)
+// Get top products (best sellers)
 router.get("/top-products", async (req, res) => {
   try {
-    const top_products = await productService.getTopProducts();
-    res.status(200).json(top_products);
+    const topProducts = await productService.getTopProducts();
+    res.status(200).json(topProducts);
   } catch (error) {
     console.error("Error fetching top products:", error);
     res.status(500).json({ error: error.message });
@@ -52,11 +50,11 @@ router.get("/top-products", async (req, res) => {
 // Get the last products added
 router.get("/last-products", async (req, res) => {
   try {
-    const last_product = await productService.getLastProducts();
-    if (!last_product) {
+    const lastProducts = await productService.getLastProducts();
+    if (!lastProducts) {
       return res.status(404).json({ error: "No products found" });
     }
-    res.status(200).json(last_product);
+    res.status(200).json(lastProducts);
   } catch (error) {
     console.log("Error fetching last products", error);
     res.status(500).json({ error: error.message });
@@ -76,9 +74,10 @@ router.post("/products", async (req, res) => {
       ? parseFloat(req.body.previousprice)
       : undefined;
     const parsedSales = req.body.sales ? parseInt(req.body.sales, 10) : 0;
-    const parsedDiscounted = req.body.discounted === "true";
+    const parsedDiscounted = req.body.discounted === "true"; // Convert "true" string to boolean
     const parsedCategoryId = req.body.categoryid;
 
+    // Validate required fields
     if (!parsedCategoryId || isNaN(parsedPrice) || isNaN(parsedStock)) {
       return res.status(400).json({
         error:
@@ -86,29 +85,39 @@ router.post("/products", async (req, res) => {
       });
     }
 
-    if (!req.files || Object.keys(req.files).length === 0) {
+    // Check if images exist
+    const uploadedFiles = req.files?.images
+      ? Array.isArray(req.files.images)
+        ? req.files.images
+        : [req.files.images]
+      : [];
+
+    if (uploadedFiles.length === 0) {
       return res
         .status(400)
         .json({ error: "At least one image file is required" });
     }
 
-    const uploadedFiles = Array.isArray(req.files.images)
-      ? req.files.images
-      : [req.files.images];
-
+    // Upload images to ImageKit
     const uploadedImages = await Promise.all(
       uploadedFiles.map(async (file) => {
-        const uploaded = await imagekit.upload({
-          file: file.data,
-          fileName: file.name,
-          folder: "/products",
-        });
-        return uploaded.url;
+        try {
+          const uploaded = await imagekit.upload({
+            file: file.data,
+            fileName: file.name,
+            folder: "/products",
+          });
+          return uploaded.url;
+        } catch (uploadError) {
+          console.error("Error uploading image:", uploadError);
+          throw new Error("Image upload failed");
+        }
       })
     );
 
     console.log("ImageKit Upload URLs:", uploadedImages);
 
+    // Create new product
     const newProduct = await productService.createProduct({
       name: req.body.name,
       description: req.body.description,
@@ -152,7 +161,7 @@ router.delete("/products/:id", async (req, res) => {
   try {
     const deletedProduct = await productService.deleteProduct(req.params.id);
     if (!deletedProduct) {
-      return res.status(404).json({ error: "This Product does not exist :(" });
+      return res.status(404).json({ error: "This product does not exist :(" });
     }
     res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
