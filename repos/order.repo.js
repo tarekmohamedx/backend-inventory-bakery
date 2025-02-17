@@ -25,6 +25,8 @@ getorderbyid:async(orderid) => {
   findorderbuuserid: async (userid) => {
     return await order.find({ customerId: userid });
   },
+
+  
 };
 
 module.exports = orderRepository;

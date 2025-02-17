@@ -11,6 +11,7 @@ const verifyToken = (req, res, next)=>{
         const token = auth.split(' ')[1];
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         req.currentUser = decodedToken.role;
+        req.user = decodedToken; 
         
         next();
 

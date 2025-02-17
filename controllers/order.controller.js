@@ -3,6 +3,7 @@ const { createorder } = require("../services/order.service");
 const router = require("express").Router();
 const orderservice = require("../services/order.service");
 const Order = require('../models/orders.model');
+const Product = require('../models/Product.model');
 const routes = {
   addneworder: async (req, res) => {
     try {
@@ -45,6 +46,34 @@ res.status(200).json({success:true , order});
   } catch (error) {
     res.status(500).send(error);
   }
+},
+
+///--------------------------------------
+getOrdersBySeller: async (req, res) => {
+  try {
+    const sellerId = req.params.sellerId;  // Get sellerId from request parameters
+
+    // Find all products by seller
+    const products = await Product.find({ sellerId: sellerId });
+
+    if (!products || products.length === 0) {
+      return res.status(404).json({ success: false, message: "No products found for this seller" });
+    }
+
+    // Get all orders where productId exists in the seller's products
+    const orders = await Order.find({
+      "items.productId": { $in: products.map(product => product._id) }, // Filter orders by seller's product IDs
+    }).populate("items.productId", "name price");
+
+    if (orders.length === 0) {
+      return res.status(404).json({ success: false, message: "No orders found for this seller" });
+    }
+
+    res.status(200).json({ success: true, orders });
+  } catch (error) {
+    console.error("Error fetching orders for seller:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 }
 
 };
@@ -53,4 +82,5 @@ router.post("/order/addneworder", routes.addneworder);
 router.get("/order/getallorder", routes.getallorder);
 router.get("/order/getorderbyid/:id", routes.getorderbyid);
 router.patch("/order/changeorderstatus/:id" , routes.changeorderstatus);
+router.get("/dashboard/orders/:sellerId", routes.getOrdersBySeller);
 module.exports = router;

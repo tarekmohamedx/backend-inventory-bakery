@@ -3,7 +3,7 @@ const Product = require('../models/Product.model');
 // get all products
 module.exports.getProducts = async() => {
     try{
-        const products = await Product.find({});
+        const products = await Product.find({}).populate('categoryid', 'name').exec();
         return products;
     }catch (error) {
         console.error("get All products error: ", error);
@@ -42,13 +42,22 @@ throw error
 module.exports.getLastProducts= async()=>{
     try{
 const lastProducts = await Product.find({})
-.sort({createdAt : -1}).limit(6) // descending
+.sort({createdAt : -1}).limit(6).populate('categoryid', 'name');  // descending
 return lastProducts;
     }catch(error){
         console.log("Error fetching last product added",error)
     }
 }
 
+// get products by seller id
+module.exports.getProductsBySeller  = async (sellerId) => {
+    try {
+        const products = await Product.find({ sellerId: sellerId }).populate('categoryid', 'name').exec();;
+        return products;
+      } catch (error) {
+        throw new Error("Failed to fetch products for the seller");
+      }
+};
 
 
   // create products
