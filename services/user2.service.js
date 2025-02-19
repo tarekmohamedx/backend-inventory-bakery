@@ -89,7 +89,7 @@ const UserService = {
   authenticateUser: async (email, password) => {
     const user = await UserRepository.findUserByEmail(email);
     if (!user) throw new Error("Invalid email or password");
-
+      console.log("Email Passed -----------------------------------")
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new Error("Invalid email or password");
 
@@ -106,6 +106,7 @@ const UserService = {
   },
 
 
+<<<<<<< HEAD
 
   //UserProfile
 //  getUserById:async(userId)=>{
@@ -147,6 +148,35 @@ updateUser: async (userId, updateData) => {
   return await UserRepository.updateUser(userId, updateData);
 }
 
+=======
+  getUserById: async (userId) => {
+    const user = await UserRepository.findUserById(userId);
+    if (!user) throw new Error('User not found');
+    return user;
+  },
+
+  updateUser: async (userId, updateData) => {
+    // Handle password update
+    if (updateData.currentPassword && updateData.newPassword) {
+      const user = await UserRepository.findUserById(userId);
+      if (!user) throw new Error('User not found');
+      
+      // Validate current password
+      const isMatch = await bcrypt.compare(updateData.currentPassword, user.password);
+      if (!isMatch) throw new Error('Current password is incorrect');
+      
+      // Hash new password
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(updateData.newPassword, salt);
+      
+      // Remove temp fields
+      // delete updateData.currentPassword;
+      // delete updateData.newPassword;
+    }
+    
+    return await UserRepository.updateUser(userId, updateData);
+  }
+>>>>>>> hamdyback
 };
 
 module.exports = UserService;
