@@ -10,7 +10,7 @@ const session = require("express-session");
 const cartController = require('./controllers/cart.controller')
 const adminController = require('./controllers/admin.controller')
 const sellerRouter =require("./controllers/seller.controller.js");
-
+InventoryController = require('./controllers/inventory.controller')
 
 const app = express();
 app.use(cors({
@@ -69,7 +69,8 @@ app.use('/cart', cartController);
 //routing
 app.use('/api/cart', cartController);
 app.use('/api/admin', adminController);
-app.use('/api/seller', sellerRouter); 
+app.use('/api/seller', sellerRouter);
+app.use('/api/inventory', InventoryController);
 
 
 

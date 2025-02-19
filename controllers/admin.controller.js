@@ -86,9 +86,15 @@ const getDashboardStats = async(req, res)=>{
     try{
         const pendingOrders = (await dashboardService.pendingOrders()).length;
         const totalMoney = (await dashboardService.totalMoney())[0].totalRevenue;
+        const latestOrders = await dashboardService.lastestOrders();
+        const customers = await dashboardService.customersCount();
+        const topProducts = await dashboardService.mostSellingProducts();
         return res.status(200).json({
             pendingOrders,
-            totalMoney
+            totalMoney,
+            latestOrders,
+            customers,
+            topProducts
         })
     }catch(err){
         return res.status(400).json({
@@ -100,7 +106,7 @@ const getDashboardStats = async(req, res)=>{
 
 
 
-router.get('/users', verifyToken, authorize('Admin') ,getUsers);
+router.get('/users',getUsers);
 router.get('/users/:role', getUserByRole)
 router.get('/user/:userId', getUserById)
 router.delete('/users/:userId', removeUser)
