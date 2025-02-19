@@ -69,21 +69,22 @@ app.use('/cart', cartController);
 //routing
 app.use('/api/cart', cartController);
 app.use('/api/admin', adminController);
-<<<<<<< HEAD
+
 app.use('/api/seller', sellerRouter); 
-<<<<<<< HEAD
-const profileRouter  = require('./controllers/userProfile.controller.js');
-app.use('/api/users', profileRouter);
-=======
+
+
+
 app.use('/api/seller', sellerRouter);
 app.use('/api/inventory', InventoryController);
->>>>>>> fa3aef12288eb8a4a560bac833afbe41d9d253d2
-=======
-const profileRouter = require('./controllers/userprofile1.controller.js');
->>>>>>> hamdyback
+
+// const profileRouter = require('./controllers/userprofile1.controller.js');
 
 // Mount profile routes under /api/users
-app.use('/api/users', profileRouter);
+// app.use('/api/users', profileRouter);
+
+
+const userProfileRoutes = require('./routes/UserProfile1.route.js');
+app.use('/api', userProfileRoutes);
 
 
 // controller registrations
