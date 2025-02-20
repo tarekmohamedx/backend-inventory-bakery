@@ -18,9 +18,11 @@ const SellerSchema = new mongoose.Schema({
 }, { _id: false });
 
 const userSchema = new mongoose.Schema({
-  username: { type: String},
-  email: { type: String, required: true, unique: true },
+  firstName: { type: String},
+  lastName: { type: String},
+  email: { type: String, required: true, unique: true ,validate:[validator.isEmail,'filed must be a valid email address']},
   password: { type: String, required: true },
+  token: { type: String },
   role: {
     type: String,
     enum: ['Customer', 'Manager', 'Seller', 'Cashier', 'Supplier', 'Admin' , 'Clerk'],
@@ -60,6 +62,9 @@ const userSchema = new mongoose.Schema({
 
 }, { timestamps: true });
  
+
+
+
 
 // Update the `updatedAt` field whenever the document is saved (before saving the doc)
 userSchema.pre('save', function(next) {

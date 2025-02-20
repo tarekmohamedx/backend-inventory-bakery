@@ -8,6 +8,10 @@ module.exports.getProductById = async (productId) => {
     return await productRepo.getProductById(productId);
 };
 
+module.exports.getProductsBySeller = async (sellerId) => {
+    return await productRepo.getProductsBySeller(sellerId);
+};
+
 module.exports.createProduct = async (ProductData) => {
     return await productRepo.createProduct(ProductData);
 };

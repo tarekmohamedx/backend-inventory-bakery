@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const UserRepository = require("../repos/user2.repo");
 const { model, Error } = require("mongoose");
+const { getUserById } = require("./users.service");
 
 const UserService = {
   createUser: async (userData) => {
@@ -25,6 +26,10 @@ const UserService = {
         // firstName: userData.first_name,
         // lastName: userData.last_name,
         username: `${userData.first_name} ${userData.last_name}`,
+        profile: {
+          firstName: userData.firstname,
+          lastName: userData.lastname,
+        },
         email: userData.email,
         profile: {
           firstName: userData.first_name,
@@ -34,19 +39,25 @@ const UserService = {
         salt,
         // role: userData.role,
         cartItems: [], // Use cartItems instead of cartitems
+        role: userData.role || 'Customer',
+        cartItems: [],
         orderIds: [],
         status: "active",
       };
+      
 
+      console.log("userPayload:  ", userPayload);
       // after creating return this user
       // will set in in db
       const createdUser =await UserRepository.createUser(userPayload);
+     // const createdUser = await UserRepository.createUser(userPayload);
+      console.log("createdUser:  ", createdUser);
       // after returning this user will take some data to create claims to return it
       // set some data to create claims
       // i will use it in jwt token in cart or checkout
       const claim = {
         userid: createdUser._id,
-        username: `${createdUser.first_name} ${createdUser.last_name}`, // Combine first and last names
+        username: `${createdUser.firstName} ${createdUser.lastName}`,
         first_name: createdUser.firstName,
         last_name: createdUser.lastName,
         email: createdUser.email,
@@ -93,7 +104,7 @@ const UserService = {
   authenticateUser: async (email, password) => {
     const user = await UserRepository.findUserByEmail(email);
     if (!user) throw new Error("Invalid email or password");
-
+      console.log("Email Passed -----------------------------------")
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new Error("Invalid email or password");
 
@@ -108,6 +119,44 @@ const UserService = {
 
     return await UserRepository.deleteUser(userId);
   },
+
+
+
+  //UserProfile
+
+
+  
+
+
+// getUserById: async (userId) => {
+//   const user = await UserRepository.findUserById(userId);
+//   if (!user) throw new Error('User not found');
+//   return user;
+// },
+
+// updateUser: async (userId, updateData) => {
+//   // Handle password update
+//   if (updateData.currentPassword && updateData.newPassword) {
+//     const user = await UserRepository.findUserById(userId);
+//     if (!user) throw new Error('User not found');
+    
+//     // Validate current password
+//     const isMatch = await bcrypt.compare(updateData.currentPassword, user.password);
+//     if (!isMatch) throw new Error('Current password is incorrect');
+    
+//     // Hash new password
+//     const salt = await bcrypt.genSalt(10);
+//     updateData.password = await bcrypt.hash(updateData.newPassword, salt);
+    
+//     // Remove temp fields
+//     delete updateData.currentPassword;
+//     delete updateData.newPassword;
+//   }
+  
+//   return await UserRepository.updateUser(userId, updateData);
+// }
+
 };
+
 
 module.exports = UserService;
