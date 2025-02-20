@@ -42,7 +42,7 @@ throw error
 module.exports.getLastProducts= async()=>{
     try{
 const lastProducts = await Product.find({})
-.sort({createdAt : -1}).limit(6).populate('categoryid', 'name');  // descending
+.sort({createdAt : -1}).limit(6).populate('categoryid', 'name', );
 return lastProducts;
     }catch(error){
         console.log("Error fetching last product added",error)
@@ -52,7 +52,7 @@ return lastProducts;
 // get products by seller id
 module.exports.getProductsBySeller  = async (sellerId) => {
     try {
-        const products = await Product.find({ sellerId: sellerId }).populate('categoryid', 'name').exec();;
+        const products = await Product.find({ sellerId: sellerId }).populate('categoryid', 'name').populate('sellerId', 'profile').exec();;
         return products;
       } catch (error) {
         throw new Error("Failed to fetch products for the seller");
@@ -97,7 +97,6 @@ module.exports.deleteProduct = async (productId) => {
     }
 };
 
-  // delete a products
   module.exports.findByCategory = async (category) => {
     try {
         return await Product.find({ category: category });

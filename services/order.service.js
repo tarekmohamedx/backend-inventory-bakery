@@ -63,7 +63,18 @@ throw new Error(error.message);
 
   getorderbyid:async(orderid) =>{
 return await orderRepository.getorderbyid(orderid);
+  },
+
+  getOrdersBySeller : async (sellerId) => {
+    try {
+      const orders = await orderRepository.getOrderBySeller(sellerId);
+      return orders;
+    } catch (error) {
+      console.error('Error in order service:', error.message);
+      throw new Error('Error fetching orders from service');
+    }
   }
+
 };
 
 module.exports = orderservice;

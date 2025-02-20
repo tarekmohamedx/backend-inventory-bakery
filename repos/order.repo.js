@@ -1,4 +1,6 @@
 const order = require("../models/orders.model");
+const productService = require("../services/product.service");
+
 
 const orderRepository = {
   createorder: async (orderData) => {
@@ -25,6 +27,19 @@ getorderbyid:async(orderid) => {
   findorderbuuserid: async (userid) => {
     return await order.find({ customerId: userid });
   },
+
+  getOrderBySeller:async(sellerId) =>{
+    try{
+      const products = await productService.getProductsBySeller(sellerId);
+      const orders = await order.find({
+        "items.productId": { $in: products.map(product => product._id) }, // Filter orders by seller's product IDs
+      }).populate("items.productId", "name price sellerId");
+      return orders;
+    }catch{
+      console.error("Error fetching orders for seller:", error.message);
+      throw new Error('Error fetching orders');
+    }
+  }
 
   
 };

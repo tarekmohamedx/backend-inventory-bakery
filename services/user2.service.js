@@ -22,26 +22,31 @@ const UserService = {
 
       // Prepare user data for creation
       const userPayload = {
-        firstName: userData.first_name,
-        lastName: userData.last_name,
+        profile: {
+          firstName: userData.firstname,
+          lastName: userData.lastname,
+        },
         email: userData.email,
         password: hashedPassword,
         salt,
-        role: userData.role,
-        cartItems: [], // Use cartItems instead of cartitems
+        role: userData.role || 'Customer',
+        cartItems: [],
         orderIds: [],
         status: "active",
       };
+      
 
+      console.log("userPayload:  ", userPayload);
       // after creating return this user
       // will set in in db
       const createdUser = await UserRepository.createUser(userPayload);
+      console.log("createdUser:  ", createdUser);
       // after returning this user will take some data to create claims to return it
       // set some data to create claims
       // i will use it in jwt token in cart or checkout
       const claim = {
         userid: createdUser._id,
-        username: `${createdUser.first_name} ${createdUser.last_name}`, // Combine first and last names
+        username: `${createdUser.firstName} ${createdUser.lastName}`,
         first_name: createdUser.firstName,
         last_name: createdUser.lastName,
         email: createdUser.email,

@@ -15,6 +15,7 @@ const routes = {
 
       req.session.token = token;
       // Send success response with the token
+      
       res.status(201).json({ success: true, token });
     } catch (error) {
       console.error("Error in register:", error.message);

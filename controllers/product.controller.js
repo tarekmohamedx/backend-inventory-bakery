@@ -1,9 +1,10 @@
 const productService = require("../services/product.service");
 const { getLastProducts } = require("../repos/product.repo");
-const mongoose = require("mongoose");
 const Product = require("../models/Product.model");
 const express = require("express");
 const ImageKit = require("imagekit");
+const Branch = require("../models/branchinventory.model").Branch;
+const BranchInventory = require("../models/branchinventory.model").BranchInventory;
 const verifyToken  = require("../middlewere/authentication.middlewere");
 
 
@@ -24,7 +25,6 @@ module.exports = (() => {
     try {
       const products = await productService.getProducts();
       console.log(products);
-      // console.log(products);
       res.status(200).json(products);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -89,8 +89,6 @@ module.exports = (() => {
         : undefined;
       const parsedSales = req.body.sales ? parseInt(req.body.sales, 10) : 0;
       const parsedDiscounted = req.body.discounted === "true"; // Convert "true" string to boolean
-
-      // Validate required fields (categoryid removed)
       if (isNaN(parsedPrice) || isNaN(parsedStock)) {
         return res.status(400).json({
           error: "Missing or invalid required fields: `price`, `stock`",
@@ -105,7 +103,6 @@ module.exports = (() => {
       }
 
       // Ensure `req.files.images` is an array
-      // const uploadedFiles = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
       const uploadedFiles = req.files?.images
         ? Array.isArray(req.files.images)
           ? req.files.images
@@ -209,19 +206,112 @@ module.exports = (() => {
   // Route to get products by sellerId
 router.get("/products/seller/:sellerId", async (req, res) => {
   try {
-    const sellerId = req.params.sellerId; // Extract sellerId from request params
+    const sellerId = req.params.sellerId;
     const products = await productService.getProductsBySeller(sellerId);
     
     if (!products || products.length === 0) {
       return res.status(404).json({ error: "No products found for this seller" });
     }
 
-    res.status(200).json(products); // Return the list of products
+    res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching products for seller:", error);
     res.status(500).json({ error: error.message });
   }
 });
+
+/// Update the endpoint to handle capacity check with product quantity
+// Backend - Route to check branch capacity
+
+router.post('/check-branch-capacity', async (req, res) => {
+  const { branch, quantity } = req.body;
+
+  try {
+    // Find the branch by name to get the ObjectId
+    const branchData = await Branch.findOne({ name: branch });
+
+    if (!branchData) {
+      return res.status(404).json({ success: false, message: 'Branch not found' });
+    }
+
+    // Now find the branch inventory using the branchId
+    const branchInventory = await BranchInventory.findOne({ branchId: branchData._id });
+    // console.log(branchInventory.name);
+    console.log('Branch data:', branchData);  // Logs branch info
+    console.log('Branch Inventory:', branchInventory);  // Logs branch inventory info
+
+
+    if (!branchInventory) {
+      return res.status(404).json({ success: false, message: 'Branch inventory not found' });
+    }
+
+    // Calculate remaining capacity
+    const remainingCapacity = branchInventory.capacity - branchInventory.currentStock;
+
+    if (remainingCapacity >= quantity) {
+      return res.status(200).json({
+        success: true,
+        availableCapacity: remainingCapacity,
+        exceedsCapacity: false
+      });
+    }else {
+      return res.status(200).json({
+        success: false,
+        availableCapacity: remainingCapacity,
+        exceedsCapacity: true
+      });
+    }
+  } catch (error) {
+    console.error('Error checking branch capacity:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+
+// In your branch-inventory routes file
+router.get('/branch-inventory', verifyToken, async (req, res) => {
+  try {
+    const sellerId = req.query.sellerId;
+    // Find all branch inventory items and populate branch and product details
+    const inventory = await BranchInventory.find()
+      .populate('branchId', 'name')
+      .populate('productId', 'name sellerId price currentStock capacity')
+      .exec();
+    
+    // Filter items where the product's sellerId matches the sellerId provided
+    const sellerInventory = inventory.filter(item => 
+      item.productId && item.productId.sellerId && item.productId.sellerId.toString() === sellerId
+    );
+    
+    res.status(200).json(sellerInventory);
+  } catch (error) {
+    console.error("Error fetching branch inventory:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// totalProducts card in seller dashboard
+router.get('/seller/totalProducts/:sellerId', async (req, res) => {
+  try {
+    const sellerId = req.params.sellerId;
+    const totalProducts = await Product.countDocuments({ sellerId });
+    return res.status(200).json({ success: true, totalProducts });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Error fetching orders' });
+  }
+});
+
+// pendingProducts card in seller dashboard
+router.get('/seller/pendingProducts/:sellerId', async (req, res) => {
+  try {
+    const sellerId = req.params.sellerId;
+    const pendingProducts = await Product.countDocuments({ sellerId, status: 'Pending' });
+    return res.status(200).json({ success: true, pendingProducts });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Error fetching orders' });
+  }
+});
+
 
   return router;
 })();
