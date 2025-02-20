@@ -23,13 +23,22 @@ const UserService = {
 
       // Prepare user data for creation
       const userPayload = {
+        // firstName: userData.first_name,
+        // lastName: userData.last_name,
+        username: `${userData.first_name} ${userData.last_name}`,
         profile: {
           firstName: userData.firstname,
           lastName: userData.lastname,
         },
         email: userData.email,
+        profile: {
+          firstName: userData.first_name,
+          lastName: userData.last_name,
+        },
         password: hashedPassword,
         salt,
+        // role: userData.role,
+        cartItems: [], // Use cartItems instead of cartitems
         role: userData.role || 'Customer',
         cartItems: [],
         orderIds: [],
@@ -40,7 +49,8 @@ const UserService = {
       console.log("userPayload:  ", userPayload);
       // after creating return this user
       // will set in in db
-      const createdUser = await UserRepository.createUser(userPayload);
+      const createdUser =await UserRepository.createUser(userPayload);
+     // const createdUser = await UserRepository.createUser(userPayload);
       console.log("createdUser:  ", createdUser);
       // after returning this user will take some data to create claims to return it
       // set some data to create claims
