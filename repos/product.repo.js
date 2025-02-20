@@ -1,4 +1,5 @@
 const Product = require('../models/Product.model');
+const Category = require("../models/category.model");
 
 // get all products
 module.exports.getProducts = async() => {
@@ -97,14 +98,19 @@ module.exports.deleteProduct = async (productId) => {
     }
 };
 
-  module.exports.findByCategory = async (category) => {
-    try {
-        return await Product.find({ category: category });
-    } catch (error) {
-        console.error("Error fetching products from DB:", error);
-        throw error;
+module.exports.findByCategory = async (categoryName) => {
+    const category = await Category.findOne({ name: categoryName });
+    if (!category) {
+      throw new Error("Category not found");
     }
+    const products = await Product.find({ categoryid: category._id });
+    if (products.length === 0) {
+      throw new Error("No products found for this category");
+    }
+
+    return products;
 };
+  
 
 
 

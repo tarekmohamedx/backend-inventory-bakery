@@ -24,11 +24,11 @@ module.exports.deleteProduct = async (productId) => {
     return await productRepo.deleteProduct(productId);
 };
 
-module.exports.findByCategory = async (category) => {
-    if (!category) {
+module.exports.findByCategory = async (categoryName) => {
+    if (!categoryName) {
         throw new Error("Category parameter is required");
     }
-    const products = await productRepo.findByCategory(category);
+    const products = await productRepo.findByCategory(categoryName);
     if (!products.length) {
         throw new Error("No products found for this category.");
     }

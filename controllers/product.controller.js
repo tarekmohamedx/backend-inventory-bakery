@@ -191,17 +191,21 @@ module.exports = (() => {
   });
 
   // Get products by category
-  router.get("/products", async (req, res) => {
-    try {
-      console.log("Query Params:", req.query);
-      const category = req.query.category;
-      const products = await productService.findByCategory(category);
-      res.status(200).json(products);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      res.status(500).json({ error: error.message });
+router.get("/products", async (req, res) => {
+  try {
+    console.log("Query Params:", req.query);
+    const categoryName = req.query.category;
+    if (!categoryName) {
+      return res.status(400).json({ error: "Category is required" });
     }
-  });
+    const products = await productService.findByCategory(categoryName);
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
   // Route to get products by sellerId
 router.get("/products/seller/:sellerId", async (req, res) => {
