@@ -11,6 +11,7 @@ module.exports.GetInventoryData = async()=>{
        .map(
          (inv) => inv.products.map((p) => p.productId) 
        )
+       
        .flat(); // Flatten if needed
 
      return populatedProducts;
