@@ -1,24 +1,28 @@
 const Inventory = require('../models/inventory.model');
-
+const Branch = require('../models/branchinventory.model'); 
 
 module.exports.GetInventoryData = async()=>{
-     try{
-let inventories = await Inventory.find().populate("products.productId");
+     const inventory = await Inventory.find().populate({
+       path: "products.productId",
+       strictPopulate: false,
+     });
 
-let productsArray = inventories.flatMap(
-  (inventory) => inventory.products.map((p) => p.productId) 
-);
+     const populatedProducts = inventory
+       .map(
+         (inv) => inv.products.map((p) => p.productId) 
+       )
+       .flat(); // Flatten if needed
 
-return productsArray;
-     }catch(error)
-     {
-          throw new Error ( 'error = ' + error.message);
-     }
+     return populatedProducts;
+
 }
 
+module.exports.getBranchInfo = async(branchId)=>{
+     return await Branch.Branch.findOne({_id:branchId}).populate('clerks').populate('cashiers')
+}
 
-
-
-
+module.exports.getAllBranches = async()=>{
+     return await Branch.Branch.find();
+}
 
 
