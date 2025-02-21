@@ -25,8 +25,8 @@ const orderSchema = new mongoose.Schema({
     },
   ],
   totalAmount: { type: Number, required: true },
-  shippingAddress: {
-    type: shippingSchema,
+  Address: {
+    type: String,
     required: true,
   },
   paymentMethod: {
@@ -47,6 +47,5 @@ const orderSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("Order", orderSchema);
-
-
+const OrderOffline = mongoose.model("OrderOffline", orderSchema);
+module.exports = OrderOffline;

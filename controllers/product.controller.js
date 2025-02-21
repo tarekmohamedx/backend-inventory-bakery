@@ -3,6 +3,8 @@ const { getLastProducts } = require("../repos/product.repo");
 const Product = require("../models/Product.model");
 const express = require("express");
 const ImageKit = require("imagekit");
+const Branch = require('../models/branchinventory.model').Branch;
+const BranchInventory = require('../models/branchinventory.model').BranchInventory;
 const verifyToken = require("../middlewere/authentication.middlewere");
 
 const router = express.Router();
