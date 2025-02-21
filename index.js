@@ -69,12 +69,7 @@ app.use('/cart', cartController);
 //routing
 app.use('/api/cart', cartController);
 app.use('/api/admin', adminController);
-
 app.use('/api/seller', sellerRouter); 
-
-
-
-app.use('/api/seller', sellerRouter);
 app.use('/api/inventory', InventoryController);
 
 // const profileRouter = require('./controllers/userprofile1.controller.js');
