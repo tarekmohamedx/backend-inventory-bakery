@@ -2,7 +2,9 @@ const { getallorder } = require("../repos/order.repo");
 const { createorder } = require("../services/order.service");
 const router = require("express").Router();
 const orderservice = require("../services/order.service");
+const orderOfflineService = require('../services/orderOffline.service');
 const Order = require('../models/orders.model');
+const OrderOffline = require('../models/OrderOffline.model');
 const routes = {
   addneworder: async (req, res) => {
     try {
@@ -51,7 +53,11 @@ res.status(200).json({success:true , order});
 getOrdersBySeller: async (req, res) => {
   try {
     const sellerId = req.params.sellerId;
-    const orders = await orderservice.getOrdersBySeller(sellerId);
+    const ordersOnline = await orderservice.getOrdersBySeller(sellerId);
+    const ordersOffline = await orderOfflineService.getOrdersBySeller(sellerId);
+    console.log("online order: ", ordersOnline);
+    console.log("offline order: ", ordersOffline);
+    const orders =  [...ordersOnline, ...ordersOffline];
     res.status(200).json({ success: true, orders });
   } catch (error) {
     console.error("Error fetching orders for seller:", error.message);
@@ -103,4 +109,5 @@ router.patch("/order/changeorderstatus/:id" , routes.changeorderstatus);
 router.get("/dashboard/orders/:sellerId", routes.getOrdersBySeller);
 router.get("/seller/totalOrders/:sellerId", routes.getTotalOrdersBySeller);
 router.get("/seller/totalSales/:sellerId", routes.getTotalSales);
+
 module.exports = router;
