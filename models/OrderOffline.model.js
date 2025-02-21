@@ -1,16 +1,16 @@
 const mongoose = require("mongoose");
 
 
-const cashierNameSchema = new mongoose.Schema({
-  firstname: {
-    type: String,
-    required: true,
-  },
-  lastname: {
-    type: String,
-    required: true,
-  },
-});
+// const cashierNameSchema = new mongoose.Schema({
+//   firstname: {
+//     type: String,
+//     required: true,
+//   },
+//   lastname: {
+//     type: String,
+//     required: true,
+//   },
+// });
 
 const orderSchema = new mongoose.Schema({
   items: [
