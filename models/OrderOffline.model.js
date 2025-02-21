@@ -1,16 +1,16 @@
 const mongoose = require("mongoose");
 
 
-const cashierNameSchema = new mongoose.Schema({
-  firstname: {
-    type: String,
-    required: true,
-  },
-  lastname: {
-    type: String,
-    required: true,
-  },
-});
+// const cashierNameSchema = new mongoose.Schema({
+//   firstname: {
+//     type: String,
+//     required: true,
+//   },
+//   lastname: {
+//     type: String,
+//     required: true,
+//   },
+// });
 
 const orderSchema = new mongoose.Schema({
   items: [
@@ -24,15 +24,6 @@ const orderSchema = new mongoose.Schema({
       price: { type: Number, required: true },
     },
   ],
-  customerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  customername: {
-    type: cashierNameSchema,
-    required: true,
-  },
   totalAmount: { type: Number, required: true },
   shippingAddress: {
     type: shippingSchema,

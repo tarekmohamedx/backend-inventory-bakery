@@ -2,11 +2,19 @@ const Inventory = require('../models/inventory.model');
 const Branch = require('../models/branchinventory.model'); 
 
 module.exports.GetInventoryData = async()=>{
-     return await Inventory.find().populate('products.productId')
-}
+     const inventory = await Inventory.find().populate({
+       path: "products.productId",
+       strictPopulate: false,
+     });
 
-module.exports.getBranchStock = async(branchId)=>{
-     return await Branch.BranchInventory.find({branchId}, {_id:0, branchId:0, cashier:0, clerk:0}).populate('productId');
+     const populatedProducts = inventory
+       .map(
+         (inv) => inv.products.map((p) => p.productId) 
+       )
+       .flat(); // Flatten if needed
+
+     return populatedProducts;
+
 }
 
 module.exports.getBranchInfo = async(branchId)=>{
