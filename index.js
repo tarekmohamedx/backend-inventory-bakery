@@ -10,7 +10,8 @@ const session = require("express-session");
 const cartController = require('./controllers/cart.controller')
 const adminController = require('./controllers/admin.controller')
 const sellerRouter =require("./controllers/seller.controller.js");
-InventoryController = require('./controllers/inventory.controller')
+InventoryController = require('./controllers/inventory.controller');
+
 
 const app = express();
 app.use(cors({
