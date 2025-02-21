@@ -172,4 +172,39 @@ router.delete("/products/:id", async (req, res) => {
   }
 });
 
+//  Change product status by ID to admin 
+router.patch("/product/changeproductstatus/:id", async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body; // Expecting status in request body
+
+  try {
+    // const validStatuses = ["Pending", "Approved", "Rejected", "Out of Stock"];
+    // if (!validStatuses.includes(productstatus)) {
+    //   return res.status(400).json({ error: "Invalid product status" });
+    // }
+
+// u can approved rejected product - pending product 
+
+    if(status === "Approved"){
+return res.status(400).json({error: "product already approved"}); 
+    }
+    
+   
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { status: status },
+      { new: true }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 module.exports = router;

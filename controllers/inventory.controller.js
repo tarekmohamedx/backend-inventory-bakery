@@ -6,12 +6,14 @@ const InventoryService = require('../services/inventory.service')
 const getInventoryData = async (req, res)=>{
         try{
             const InventoryData = await InventoryService.GetInventoryData();
-            res.status(200).json({
+            console.log(InventoryData); 
+            console.log(await InventoryService.GetInventoryData());
+            res.status(200).json(
                 InventoryData
-            });
+            );
         }catch(err){
                 res.status(400).json({
-                    err
+                    error: err.message
                 })
         }
 }
@@ -23,7 +25,7 @@ const getInventoryData = async (req, res)=>{
 
 
 
-router.get('/', getInventoryData);
+router.get('/all', getInventoryData);
 
 
 
