@@ -6,9 +6,9 @@ const InventoryService = require('../services/inventory.service')
 const getInventoryData = async (req, res)=>{
         try{
             const InventoryData = await InventoryService.GetInventoryData();
-            res.status(200).json({
+            res.status(200).json(
                 InventoryData
-            });
+            );
         }catch(err){
                 res.status(400).json({
                     err
@@ -21,9 +21,9 @@ const getBranchStock = async (req, res)=>{
     try {
          const {branchId} = req.params
          const branchStock = await InventoryService.getBranchStock(branchId);
-        res.status(200).json({
+        res.status(200).json(
             branchStock
-        })
+        )
 
         
     } catch (error) {
@@ -52,9 +52,9 @@ const getBranchInfo = async (req, res)=>{
 const getAllBranches = async (req, res)=>{
     try {
         const branches = await InventoryService.getAllBranches();
-        res.status(200).json({
+        res.status(200).json(
             branches
-        })
+        )
         
     } catch (error) {
         res.status(400).json({
