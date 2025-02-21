@@ -18,12 +18,14 @@ module.exports.GetInventoryData = async()=>{
 
 }
 
+module.exports.getBranchStock = async(branchId)=>{
+  return await Branch.BranchInventory.find({branchId}, {_id:0, branchId:0, cashier:0, clerk:0}).populate('productId');
+}
+
 module.exports.getBranchInfo = async(branchId)=>{
-     return await Branch.Branch.findOne({_id:branchId}).populate('clerks').populate('cashiers')
+  return await Branch.Branch.findOne({_id:branchId}).populate('clerks').populate('cashiers')
 }
 
 module.exports.getAllBranches = async()=>{
-     return await Branch.Branch.find();
+  return await Branch.Branch.find();
 }
-
-
