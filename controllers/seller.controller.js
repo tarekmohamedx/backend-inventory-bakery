@@ -64,7 +64,7 @@ const sellerService = require("../services/seller.service");
         try {
             const sellers = await sellerService.getSellers();
             console.log("Fetched sellers:", sellers);
-    if (!sellers || !Array.isArray(sellers)|| sellers.length === 0) {
+    if (!sellers || !Array.isArray(sellers)) {
         console.log("No sellers found in the database.");
       throw new Error("Sellers data is not in expected array format");
     }
