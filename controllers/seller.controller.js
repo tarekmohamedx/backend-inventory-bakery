@@ -73,7 +73,7 @@ const sellerService = require("../services/seller.service");
                 totalSales: seller.totalSales ,
                 totalProfits: seller.totalProfits,
             }));
-            res.status(200).json(stats);
+            res.status(200).json(stats);  ///mmmmmmmmmmmmmmmmmmm
         } catch (error) {
             console.error("Error in /seller-stats:", error);
             res.status(500).json({ error: error.message });
