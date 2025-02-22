@@ -1,5 +1,4 @@
 const productService = require("../services/product.service");
-const { getLastProducts } = require("../repos/product.repo");
 const Product = require("../models/Product.model");
 const express = require("express");
 const ImageKit = require("imagekit");
@@ -195,12 +194,14 @@ module.exports = (() => {
       console.log("Query Params:", req.query);
       const category = req.query.category;
       const products = await productService.findByCategory(category);
-      res.status(200).json(products);
+      const filteredProducts = products.filter(p =>p.status === 'Approved');
+      res.status(200).json(filteredProducts);
     } catch (error) {
       console.error("Error fetching products:", error);
       res.status(500).json({ error: error.message });
     }
   });
+
 
   // Route to get products by sellerId
 router.get("/products/seller/:sellerId", async (req, res) => {
