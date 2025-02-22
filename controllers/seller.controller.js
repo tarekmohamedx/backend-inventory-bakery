@@ -69,9 +69,9 @@ const sellerService = require("../services/seller.service");
       throw new Error("Sellers data is not in expected array format");
     }
             const stats = sellers.map(seller => ({
-                storeName: seller.storeName ||0 ,
-                totalSales: seller.totalSales ||0,
-                totalProfits: seller.totalProfits ||0,
+                storeName: seller.storeName ,
+                totalSales: seller.totalSales ,
+                totalProfits: seller.totalProfits,
             }));
             res.status(200).json(stats);
         } catch (error) {
