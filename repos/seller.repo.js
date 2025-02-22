@@ -5,8 +5,9 @@ console.log(Seller);
 //get all sellers
  const getsellers = async()=>{
     try{
-return await Seller.find({})
-
+  const sellers = await Seller.find({});
+console.log("Sellers from DB:", sellers);  // Debugging log
+return sellers;
     }catch(error){
         console.error('Error fetching sellers:', error);
         throw error;

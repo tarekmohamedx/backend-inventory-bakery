@@ -64,13 +64,14 @@ const sellerService = require("../services/seller.service");
         try {
             const sellers = await sellerService.getSellers();
             console.log("Fetched sellers:", sellers);
-    if (!sellers || !Array.isArray(sellers)) {
+    if (!sellers || !Array.isArray(sellers)|| sellers.length === 0) {
+        console.log("No sellers found in the database.");
       throw new Error("Sellers data is not in expected array format");
     }
             const stats = sellers.map(seller => ({
-                storeName: seller.storeName,
-                totalSales: seller.totalSales,
-                totalProfits: seller.totalProfits,
+                storeName: seller.storeName ||0 ,
+                totalSales: seller.totalSales ||0,
+                totalProfits: seller.totalProfits ||0,
             }));
             res.status(200).json(stats);
         } catch (error) {
