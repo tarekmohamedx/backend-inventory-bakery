@@ -92,6 +92,33 @@ const getAllRequests = async (req, res)=>{
     }
 }
 
+const changeRequestStat = async(req, res)=>{
+    try {
+        const requestId = req.params.requestId;
+        const { status, message } = req.body;
+        console.log(requestId);
+        
+        if (!status || !requestId) {
+        return res.status(400).json({ message: "Status or Request Id is required" });
+         }   
+
+        const reqUpdated = await InventoryService.changeRequestStat(requestId, status, message);
+        if (!reqUpdated) {
+            return res.status(404).json({ success: false, message: "Request not found" });
+        }
+        res.status(200).json({
+            success: true,
+            message: "Stock Request Status has been changed",
+            data: reqUpdated
+        })
+        
+    } catch (error) {
+        res.status(400).json({
+            message: error.message
+        })   
+    }
+}
+
 
 
 router.get('/all', getInventoryData);
@@ -101,6 +128,7 @@ router.get('/branches', getAllBranches);
 
 router.post('/clerk/request/:branchId', requestStock);
 router.get('/requests', getAllRequests);
+router.put('/stockReq/:requestId', changeRequestStat)
 
 
 
