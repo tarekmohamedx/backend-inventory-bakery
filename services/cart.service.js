@@ -2,6 +2,7 @@ const userRepo = require('../repos/users.repo');
 const productRepo = require('../repos/product.repo');
 const { calculateTotal } = require('../utils/cartUtils');
 const mongoose = require("mongoose");
+const Product = require("../models/Product.model");
 // const User = require("../models/users.model");
 
 exports.addToCart = async (userId, productId, quantity) => {
@@ -44,6 +45,36 @@ exports.getUserCart = async (userId) => {
       total,
     };
   };
+
+// exports.getUserCart = async (userId) => {
+//   const user = await userRepo.getUserById(userId);
+//   if (!user) {
+//       const error = new Error("User not found");
+//       error.statusCode = 404;
+//       throw error;
+//   }
+
+//   let cart = user.cartItems || [];
+//   const filteredCart = [];
+//   for (let item of cart) {
+//       const product = await Product.findById(item.productId);
+//       if (product) {
+//           filteredCart.push(item);
+//       }
+//   }
+//   if (filteredCart.length !== cart.length) {
+//       user.cartItems = filteredCart;
+//       await user.save();
+//   }
+
+//   const total = calculateTotal(filteredCart);
+
+//   return {
+//       userId,
+//       items: filteredCart,
+//       total,
+//   };
+// };
 
   exports.updateCartItemQuantity = async (userId, productId, quantity) => {
     const user = await userRepo.getUserById(userId);
