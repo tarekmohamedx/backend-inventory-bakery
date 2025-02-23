@@ -86,21 +86,38 @@ module.exports = (() => {
         ? parseFloat(req.body.previousprice)
         : undefined;
       const parsedSales = req.body.sales ? parseInt(req.body.sales, 10) : 0;
-      const parsedDiscounted = req.body.discounted === "true"; // Convert "true" string to boolean
+      const parsedDiscounted = req.body.discounted === "true";
       if (isNaN(parsedPrice) || isNaN(parsedStock)) {
         return res.status(400).json({
           error: "Missing or invalid required fields: `price`, `stock`",
         });
       }
 
-      // Check if images are provided
+      let branches = req.body.branches;
+      if (typeof branches === 'string') {
+        branches = JSON.parse(branches);
+      }
+
+      console.log("Parsed Branches:", branches);
+
+      let branchNames = [];
+      let totalStock = 0;
+
+      if (Array.isArray(branches)) {
+        branches.forEach(branch => {
+          if (branch.branch && branch.quantity) {
+            branchNames.push(branch.branch);
+            totalStock += parseInt(branch.quantity);
+          }
+        });
+      }
+      console.log("Final Branch Names:", branchNames);
+      console.log("Total Stock:", totalStock);
       if (!req.files || Object.keys(req.files).length === 0) {
         return res
           .status(400)
           .json({ error: "At least one image file is required" });
       }
-
-      // Ensure `req.files.images` is an array
       const uploadedFiles = req.files?.images
         ? Array.isArray(req.files.images)
           ? req.files.images
@@ -126,23 +143,23 @@ module.exports = (() => {
 
       console.log("ImageKit Upload URLs:", uploadedImages);
 
-    // Create a new product
-    const newProduct = await Product.create({
-      name: req.body.name,
-      description: req.body.description,
-      price: parsedPrice,
-      previousprice: parsedPreviousPrice,
-      sales: parsedSales,
-      stock: parsedStock,
-      flavor: req.body.flavor,
-      discounted: parsedDiscounted,
-      images: uploadedImages,
-      categoryid: req.body.categoryid,
-      sellerId: user.userId,
-      accentColor: req.body.accentColor || '#0B374D',
-      status: req.body.status || 'Pending',
-      branch:req.body.branch
-    });
+      // Create a new product
+      const newProduct = await Product.create({
+        name: req.body.name,
+        description: req.body.description,
+        price: parsedPrice,
+        previousprice: parsedPreviousPrice,
+        sales: parsedSales,
+        stock: totalStock,
+        flavor: req.body.flavor,
+        discounted: parsedDiscounted,
+        images: uploadedImages,
+        categoryid: req.body.categoryid,
+        sellerId: user.userId,
+        accentColor: req.body.accentColor || '#0B374D',
+        status: req.body.status || 'Pending',
+        branch: branchNames,
+      });
 
       return res.status(201).json(newProduct);
     } catch (error) {
@@ -301,6 +318,11 @@ router.post('/check-branch-capacity', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
+
+
+
+
 
 
 // In your branch-inventory routes file
