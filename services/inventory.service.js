@@ -197,6 +197,7 @@ module.exports.transferToBranch = async(requestId)=>{
 
                     const branchData = await Branch.BranchInventory.findOne({
                           branchId: request.branchId,
+                          productId: request.productId,
                        });
               
                   if(!branchData)
