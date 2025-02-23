@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
-const inventorySchema = new mongoose.Schema({
-    branchid: { type: mongoose.Schema.Types.ObjectId, ref: 'branchinventory', required: true },
-    productid: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },  
-    quantiy:{type:Number},  
-    Status:{type:String , enum: ['pending , approved , rejected'] ,  default:0},
+const RestockSechema = new mongoose.Schema({
+    branchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Branch', required: true },
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },  
+    quantity: { type: Number, required: true },
+    Status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+    responseMessage:{type:String, default: ''}
 });
 
-module.exports = mongoose.model('Inventory', inventorySchema);
-
+module.exports = mongoose.model('RestockRequest', RestockSechema);
