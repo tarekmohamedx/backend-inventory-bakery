@@ -71,6 +71,7 @@ module.exports.getBranchStock = async (branchId) => {
 };
 
 
+
 module.exports.getBranchInfo = async(branchId)=>{
   return await Branch.Branch.findOne({_id:branchId}).populate('clerks').populate('cashiers')
 }
@@ -101,14 +102,25 @@ module.exports.requestStock = async(branchId, productId, quantity)=>{
 }
 }
 
-module.exports.getAllRequests = async()=>{
-  try {
-    return await Restock.find({},{__v:0})
-      .populate('branchId', 'location name');
+// module.exports.getAllRequests = async()=>{
+//   try {
+//     return await Restock.find({},{__v:0})
+//       .populate('branchId', 'location name');
     
-    }catch (error){}
+//     }catch (error){}
 
-}
+// }
+
+module.exports.getAllRequests = async () => {
+  try {
+    return await Restock.find({}, { __v: 0 })
+      .populate("branchId", "name location") 
+      .populate("productId", "name"); 
+  } catch (error) {
+    console.error("Error fetching restock requests:", error);
+    throw error;
+  }
+};
 
 module.exports.changeRequestStat = async(requestId, newStatus, message)=>{
   try {
