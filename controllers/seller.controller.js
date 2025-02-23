@@ -1,5 +1,6 @@
 const express =require('express');
 const sellerService = require("../services/seller.service");
+const dashboardService = require('../services/dashboard.service');
 
 
     const router =express.Router();
@@ -59,28 +60,46 @@ const sellerService = require("../services/seller.service");
 
     })
 
-    // Get seller stats
-    router.get('/seller-stats', async (req, res) => {
-        try {
-            const sellers = await sellerService.getSellers();
-            console.log("Fetched sellers:", sellers);
-    if (!sellers || !Array.isArray(sellers)) {
-        console.log("No sellers found in the database.");
-      throw new Error("Sellers data is not in expected array format");
-    }
-            const stats = sellers.map(seller => ({
-                storeName: seller.storeName ,
-                totalSales: seller.totalSales ,
-                totalProfits: seller.totalProfits,
-            }));
-            res.status(200).json(stats);  ///mmmmmmmmmmmmmmmmmmm
-        } catch (error) {
-            console.error("Error in /seller-stats:", error);
-            res.status(500).json({ error: error.message });
+
+    
+      
+
+router.get('/dashboard/:sellerId', async (req, res) => {
+    try {
+        const sellerId = req.params.sellerId;
+        const stats = await sellerService.getSellerDashboardStats(sellerId);
+        
+        if (!stats) {
+            return res.status(404).json({ message: "Seller not found" });
         }
-    });
+
+        res.json(stats);
+    } catch (error) {
+        console.error("Error fetching seller dashboard:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
+
+router.get('/stats/:sellerId', async (req, res) => {
+    try {
+        const sellerId = req.params.sellerId;
+        const stats = await sellerService.getSellerSalesStats(sellerId); 
+
+        if (!stats) {
+            return res.status(404).json({ message: "Seller stats not found" });
+        }
+
+        res.json(stats);
+    } catch (error) {
+        console.error("Error fetching seller stats:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
 
 
 
+
+     
 
     module.exports= router;
