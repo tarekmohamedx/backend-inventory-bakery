@@ -6,6 +6,7 @@ const ImageKit = require("imagekit");
 const Branch = require('../models/branchinventory.model').Branch;
 const BranchInventory = require('../models/branchinventory.model').BranchInventory;
 const verifyToken = require("../middlewere/authentication.middlewere");
+const InventoryService = require('../services/inventory.service')
 
 const router = express.Router();
 const imagekit = new ImageKit({
@@ -232,20 +233,30 @@ router.patch("/product/changeproductstatus/:id", async (req, res) => {
 
 // u can approved rejected product - pending product 
 
-    if(status === "Approved"){
-return res.status(400).json({error: "product already approved"}); 
+    const product = await productService.getProductById(id);
+
+
+    if(product.status === "Approved"){
+return res.status(400).json({error: "Product already approved"}); 
     }
     
    
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
-      { status: status },
+      { status: 'Approved' },
       { new: true }
     );
 
     if (!updatedProduct) {
       return res.status(404).json({ error: "Product not found" });
     }
+
+
+    //Transfer to Main Inventory ??
+    if(status === 'Approved')
+      await InventoryService.transferToMainInventory(id);
+
+
 
     res.status(200).json(updatedProduct);
   } catch (error) {
