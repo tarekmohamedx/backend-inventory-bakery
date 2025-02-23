@@ -120,6 +120,25 @@ const changeRequestStat = async(req, res)=>{
 }
 
 
+const transferToBranch = async(req, res)=>{
+    try {
+        const requestId = req.params.requestId;
+        const response =  await InventoryService.transferToBranch(requestId);
+        res.status(200).json({
+            success: true,
+            message: response,
+        })
+        
+        
+    } catch (error) {
+        res.status(400).json({
+            message: error.message
+        })   
+    }
+}
+
+
+
 
 router.get('/all', getInventoryData);
 router.get('/branch/:branchId', getBranchStock);
@@ -128,7 +147,8 @@ router.get('/branches', getAllBranches);
 
 router.post('/clerk/request/:branchId', requestStock);
 router.get('/requests', getAllRequests);
-router.put('/stockReq/:requestId', changeRequestStat)
+router.put('/stockReq/:requestId', changeRequestStat);
+router.post('/transfer/:requestId', transferToBranch);
 
 
 

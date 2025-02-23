@@ -38,7 +38,7 @@ const branchInventorySchema = new mongoose.Schema(
     clerk: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Employee handling stock
     cashier: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Cashier managing transactions
 
-    capacity: { type: Number, required: true }, // Max number of items branch can store
+    capacity: { type: Number }, // Max number of items branch can store
     currentStock: { type: Number, default: 0 }, // Tracks current stock level
   },
   { timestamps: true }
@@ -56,11 +56,19 @@ branchInventorySchema.pre("save", function (next) {
   next();
 });
 
-// Export models
+//Export models
 module.exports = {
   Branch: mongoose.model("Branch", branchSchema),
   BranchInventory: mongoose.model("BranchInventory", branchInventorySchema),
 };
+
+// const Branch = mongoose.model("Branch", branchSchema);
+// const BranchInventory = mongoose.model("BranchInventory", branchInventorySchema);
+// module.exports = {
+//   Branch,
+//   BranchInventory
+// }
+
 
 /*
 mansoure 

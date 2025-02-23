@@ -1,11 +1,11 @@
 const productService = require("../services/product.service");
-const { getLastProducts } = require("../repos/product.repo");
 const Product = require("../models/Product.model");
 const express = require("express");
 const ImageKit = require("imagekit");
 const Branch = require('../models/branchinventory.model').Branch;
 const BranchInventory = require('../models/branchinventory.model').BranchInventory;
 const verifyToken = require("../middlewere/authentication.middlewere");
+const InventoryService = require('../services/inventory.service')
 
 const router = express.Router();
 const imagekit = new ImageKit({
@@ -87,21 +87,38 @@ module.exports = (() => {
         ? parseFloat(req.body.previousprice)
         : undefined;
       const parsedSales = req.body.sales ? parseInt(req.body.sales, 10) : 0;
-      const parsedDiscounted = req.body.discounted === "true"; // Convert "true" string to boolean
+      const parsedDiscounted = req.body.discounted === "true";
       if (isNaN(parsedPrice) || isNaN(parsedStock)) {
         return res.status(400).json({
           error: "Missing or invalid required fields: `price`, `stock`",
         });
       }
 
-      // Check if images are provided
+      let branches = req.body.branches;
+      if (typeof branches === 'string') {
+        branches = JSON.parse(branches);
+      }
+
+      console.log("Parsed Branches:", branches);
+
+      let branchNames = [];
+      let totalStock = 0;
+
+      if (Array.isArray(branches)) {
+        branches.forEach(branch => {
+          if (branch.branch && branch.quantity) {
+            branchNames.push(branch.branch);
+            totalStock += parseInt(branch.quantity);
+          }
+        });
+      }
+      console.log("Final Branch Names:", branchNames);
+      console.log("Total Stock:", totalStock);
       if (!req.files || Object.keys(req.files).length === 0) {
         return res
           .status(400)
           .json({ error: "At least one image file is required" });
       }
-
-      // Ensure `req.files.images` is an array
       const uploadedFiles = req.files?.images
         ? Array.isArray(req.files.images)
           ? req.files.images
@@ -127,23 +144,23 @@ module.exports = (() => {
 
       console.log("ImageKit Upload URLs:", uploadedImages);
 
-    // Create a new product
-    const newProduct = await Product.create({
-      name: req.body.name,
-      description: req.body.description,
-      price: parsedPrice,
-      previousprice: parsedPreviousPrice,
-      sales: parsedSales,
-      stock: parsedStock,
-      flavor: req.body.flavor,
-      discounted: parsedDiscounted,
-      images: uploadedImages,
-      categoryid: req.body.categoryid,
-      sellerId: user.userId,
-      accentColor: req.body.accentColor || '#0B374D',
-      status: req.body.status || 'Pending',
-      branch:req.body.branch
-    });
+      // Create a new product
+      const newProduct = await Product.create({
+        name: req.body.name,
+        description: req.body.description,
+        price: parsedPrice,
+        previousprice: parsedPreviousPrice,
+        sales: parsedSales,
+        stock: totalStock,
+        flavor: req.body.flavor,
+        discounted: parsedDiscounted,
+        images: uploadedImages,
+        categoryid: req.body.categoryid,
+        sellerId: user.userId,
+        accentColor: req.body.accentColor || '#0B374D',
+        status: req.body.status || 'Pending',
+        branch: branchNames,
+      });
 
       return res.status(201).json(newProduct);
     } catch (error) {
@@ -195,12 +212,14 @@ module.exports = (() => {
       console.log("Query Params:", req.query);
       const category = req.query.category;
       const products = await productService.findByCategory(category);
-      res.status(200).json(products);
+      const filteredProducts = products.filter(p =>p.status === 'Approved');
+      res.status(200).json(filteredProducts);
     } catch (error) {
       console.error("Error fetching products:", error);
       res.status(500).json({ error: error.message });
     }
   });
+
 
   // Route to get products by sellerId
 router.get("/products/seller/:sellerId", async (req, res) => {
@@ -232,20 +251,30 @@ router.patch("/product/changeproductstatus/:id", async (req, res) => {
 
 // u can approved rejected product - pending product 
 
-    if(status === "Approved"){
-return res.status(400).json({error: "product already approved"}); 
+    const product = await productService.getProductById(id);
+
+
+    if(product.status === "Approved"){
+return res.status(400).json({error: "Product already approved"}); 
     }
     
    
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
-      { status: status },
+      { status: 'Approved' },
       { new: true }
     );
 
     if (!updatedProduct) {
       return res.status(404).json({ error: "Product not found" });
     }
+
+
+    //Transfer to Main Inventory ??
+    if(status === 'Approved')
+      await InventoryService.transferToMainInventory(id);
+
+
 
     res.status(200).json(updatedProduct);
   } catch (error) {
@@ -302,19 +331,25 @@ router.post('/check-branch-capacity', async (req, res) => {
 });
 
 
+
+
+
+
+
 // In your branch-inventory routes file
 router.get('/branch-inventory', verifyToken, async (req, res) => {
   try {
     const sellerId = req.query.sellerId;
-    // Find all branch inventory items and populate branch and product details
-    const inventory = await BranchInventory.find()
+
+    const inventory = await BranchInventory.find({})
       .populate('branchId', 'name')
       .populate('productId', 'name sellerId price currentStock capacity')
       .exec();
-    
-    // Filter items where the product's sellerId matches the sellerId provided
     const sellerInventory = inventory.filter(item => 
-      item.productId && item.productId.sellerId && item.productId.sellerId.toString() === sellerId
+      item.productId && 
+      item.productId.sellerId && 
+      item.productId.sellerId.toString() === sellerId &&
+      item.branchId != null
     );
     
     res.status(200).json(sellerInventory);
@@ -323,6 +358,7 @@ router.get('/branch-inventory', verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 // totalProducts card in seller dashboard
 router.get('/seller/totalProducts/:sellerId', async (req, res) => {
