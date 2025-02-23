@@ -64,6 +64,7 @@ module.exports.getBranchStock = async (branchId) => {
 };
 
 
+
 module.exports.getBranchInfo = async(branchId)=>{
   return await Branch.Branch.findOne({_id:branchId}).populate('clerks').populate('cashiers')
 }
