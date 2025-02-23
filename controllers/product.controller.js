@@ -329,15 +329,16 @@ router.post('/check-branch-capacity', async (req, res) => {
 router.get('/branch-inventory', verifyToken, async (req, res) => {
   try {
     const sellerId = req.query.sellerId;
-    // Find all branch inventory items and populate branch and product details
-    const inventory = await BranchInventory.find()
+
+    const inventory = await BranchInventory.find({})
       .populate('branchId', 'name')
       .populate('productId', 'name sellerId price currentStock capacity')
       .exec();
-    
-    // Filter items where the product's sellerId matches the sellerId provided
     const sellerInventory = inventory.filter(item => 
-      item.productId && item.productId.sellerId && item.productId.sellerId.toString() === sellerId
+      item.productId && 
+      item.productId.sellerId && 
+      item.productId.sellerId.toString() === sellerId &&
+      item.branchId != null
     );
     
     res.status(200).json(sellerInventory);
@@ -346,6 +347,7 @@ router.get('/branch-inventory', verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 // totalProducts card in seller dashboard
 router.get('/seller/totalProducts/:sellerId', async (req, res) => {
