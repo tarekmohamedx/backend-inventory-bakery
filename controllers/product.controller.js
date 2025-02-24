@@ -212,7 +212,9 @@ module.exports = (() => {
       console.log("Query Params:", req.query);
       const category = req.query.category;
       const products = await productService.findByCategory(category);
-      const filteredProducts = products.filter(p =>p.status === 'Approved');
+      const filteredProducts = products.filter(p =>p.status === 'Approved' && p.branch.includes('MainBranch'));
+      console.log("filteredProducts: ", filteredProducts);
+      // console.log("filteredProductsbyBranch: ", filteredProducts.filter(p=>p.branch.includes('MainBranch')));
       res.status(200).json(filteredProducts);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -256,6 +258,7 @@ router.patch("/product/changeproductstatus/:id", async (req, res) => {
 
     if(product.status === "Approved"){
 return res.status(400).json({error: "Product already approved"}); 
+
     }
     
    

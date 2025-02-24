@@ -32,6 +32,14 @@ module.exports = {
     }
   },  
 
+  getallorders: async() =>{
+    try{
+    return await orderRepo.getallorder();
+    }catch(error){
+    throw new Error(error.message);
+    }
+  },
+
 };
 
 
