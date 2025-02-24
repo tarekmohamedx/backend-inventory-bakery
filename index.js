@@ -73,14 +73,9 @@ app.use('/api/admin', adminController);
 app.use('/api/seller', sellerRouter); 
 app.use('/api/inventory', InventoryController);
 
-// const profileRouter = require('./controllers/userprofile1.controller.js');
-
-// Mount profile routes under /api/users
-// app.use('/api/users', profileRouter);
-
 
 const userProfileRoutes = require('./routes/UserProfile1.route.js');
-app.use('/api', userProfileRoutes);
+app.use('/api/users', userProfileRoutes);
 
 
 // controller registrations
