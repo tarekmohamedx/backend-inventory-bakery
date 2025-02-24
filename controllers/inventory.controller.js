@@ -155,7 +155,9 @@ const transferfromadmintobranch = async (req, res) => {
     // 10% transfer, but at least 1 unit
     const transferQuantity = Math.max(Math.floor(product.stock * 0.1), 1);
 
-    if (product.stock < transferQuantity)
+    if (product.stock < transferQuantity){
+        
+    }
       return res.status(400).json({ message: "Not enough stock for transfer" });
 
     // Find branch inventory for the specific product
