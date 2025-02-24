@@ -2,6 +2,10 @@ const OrderOffline = require('../models/OrderOffline.model');
 const productService = require("../services/product.service");
 
 module.exports = {
+  getallorder: async() => {
+      const orders = await OrderOffline.find({}).populate("items.productId", "name price sellerId");
+      return orders;
+  },
   getOrderById: async (orderId) => {
     try {
       const order = await OrderOffline.findById(orderId)
