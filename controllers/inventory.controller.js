@@ -205,6 +205,22 @@ const transferfromadmintobranch = async (req, res) => {
 };
 
 
+// get all products by cashier id 
+const getProductsByCashier = async (cashierId) => {
+  try {
+    const products = await BranchInventory.find({ cashier: cashierId })
+      .populate("productId", "name price") 
+      .select("productId stockIn stockOut price"); 
+
+    if (!products.length) {
+      return { message: "No products found for this cashier." };
+    }
+
+    return products;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
 
 
 
@@ -213,6 +229,7 @@ router.get('/branch/:branchId', getBranchStock);
 router.get('/branch/info/:branchId', getBranchInfo);
 router.get('/branches', getAllBranches);
 
+router.get('/cashier/:cashierId', getProductsByCashier);
 router.post('/clerk/request/:branchId', requestStock);
 router.get('/requests', getAllRequests);
 router.put('/stockReq/:requestId', changeRequestStat);
