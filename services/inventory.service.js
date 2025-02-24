@@ -125,6 +125,7 @@ module.exports.getAllRequests = async () => {
 module.exports.changeRequestStat = async(requestId, newStatus, message)=>{
   try {
     const reqUpdated = await Restock.findByIdAndUpdate(requestId, {Status:newStatus, responseMessage:message}, { new: true })
+      this.transferToBranch(reqUpdated._id);
     return reqUpdated;
     }catch (err){
       throw new Error(err.message);
