@@ -26,55 +26,55 @@ exports.addToCart = async (userId, productId, quantity) => {
 };
 
 
-exports.getUserCart = async (userId) => {
-    const user = await userRepo.getUserById(userId);
-    if (!user) {
-      const error = new Error("User not found");
-      error.statusCode = 404;
-      throw error;
-    }
-  
-    const cart = user.cartItems;
-    console.log(cart);
-    
-    const total = calculateTotal(cart);
-  
-    return {
-      userId,
-      items: cart,
-      total,
-    };
-  };
-
 // exports.getUserCart = async (userId) => {
-//   const user = await userRepo.getUserById(userId);
-//   if (!user) {
+//     const user = await userRepo.getUserById(userId);
+//     if (!user) {
 //       const error = new Error("User not found");
 //       error.statusCode = 404;
 //       throw error;
-//   }
-
-//   let cart = user.cartItems || [];
-//   const filteredCart = [];
-//   for (let item of cart) {
-//       const product = await Product.findById(item.productId);
-//       if (product) {
-//           filteredCart.push(item);
-//       }
-//   }
-//   if (filteredCart.length !== cart.length) {
-//       user.cartItems = filteredCart;
-//       await user.save();
-//   }
-
-//   const total = calculateTotal(filteredCart);
-
-//   return {
+//     }
+  
+//     const cart = user.cartItems;
+//     console.log(cart);
+    
+//     const total = calculateTotal(cart);
+  
+//     return {
 //       userId,
-//       items: filteredCart,
+//       items: cart,
 //       total,
+//     };
 //   };
-// };
+
+exports.getUserCart = async (userId) => {
+  const user = await userRepo.getUserById(userId);
+  if (!user) {
+      const error = new Error("User not found");
+      error.statusCode = 404;
+      throw error;
+  }
+
+  let cart = user.cartItems || [];
+  const filteredCart = [];
+  for (let item of cart) {
+      const product = await Product.findById(item.productId);
+      if (product) {
+          filteredCart.push(item);
+      }
+  }
+  if (filteredCart.length !== cart.length) {
+      user.cartItems = filteredCart;
+      await user.save();
+  }
+
+  const total = calculateTotal(filteredCart);
+
+  return {
+      userId,
+      items: filteredCart,
+      total,
+  };
+};
 
   exports.updateCartItemQuantity = async (userId, productId, quantity) => {
     const user = await userRepo.getUserById(userId);

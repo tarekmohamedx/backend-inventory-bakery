@@ -4,6 +4,7 @@ const express = require("express");
 const ImageKit = require("imagekit");
 const Branch = require('../models/branchinventory.model').Branch;
 const BranchInventory = require('../models/branchinventory.model').BranchInventory;
+const OrderOffline = require('../models/OrderOffline.model');
 const verifyToken = require("../middlewere/authentication.middlewere");
 const InventoryService = require('../services/inventory.service')
 
@@ -383,6 +384,102 @@ router.get('/seller/pendingProducts/:sellerId', async (req, res) => {
     return res.status(500).json({ success: false, message: 'Error fetching orders' });
   }
 });
+
+//---------------------------------------------------------------------------------------------------------------
+// Example endpoint: GET /api/cashier/:cashierId/products
+// router.get('/cashier/:cashierId/products', async (req, res) => {
+//   try {
+//     const cashierId = req.params.cashierId;
+//     // Find the branch where the cashier works
+//     const branch = await Branch.findOne({ cashiers: cashierId });
+//     if (!branch) {
+//       return res.status(404).json({ error: 'Branch not found for this cashier.' });
+//     }
+//     // Find the inventory for that branch and populate product details
+//     const products = await BranchInventory.find({ branchId: branch._id }).populate('productId');
+//     console.log("products", products);
+//     return res.json({ products });
+//   } catch (error) {
+//     console.error('Error fetching branch products:', error);
+//     return res.status(500).json({ error: 'Server error.' });
+//   }
+// });
+
+router.get('/cashier/:cashierId/products', async (req, res) => {
+  try {
+    const cashierId = req.params.cashierId;
+    const category = req.query.category; // e.g. "cookies"
+
+    // 1. Find the branch where the cashier works.
+    const branch = await Branch.findOne({ cashiers: cashierId });
+    if (!branch) {
+      return res.status(404).json({ error: 'Branch not found for this cashier.' });
+    }
+
+    // 2. Find the inventory for that branch and populate product details,
+    // including the category info from the 'categoryid' field.
+    let inventoryItems = await BranchInventory.find({ branchId: branch._id })
+      .populate({
+        path: 'productId',
+        populate: { path: 'categoryid', select: 'name' }
+      });
+
+    console.log("Raw Inventory Items:", inventoryItems);
+
+    // Log each product's category for debugging.
+    inventoryItems.forEach(item => {
+      const prodName = item.productId ? item.productId.name : "No product";
+      const catName = item.productId && item.productId.categoryid 
+                      ? item.productId.categoryid.name 
+                      : "Not populated";
+      console.log(`Product: ${prodName}, Category: ${catName}`);
+    });
+
+    // 3. If a category is provided, filter inventory items based on the populated category name.
+    if (category) {
+      console.log("Filtering by category:", category);
+      inventoryItems = inventoryItems.filter(item => {
+        if (!item.productId || !item.productId.categoryid) {
+          console.log(`Excluding product ${item.productId ? item.productId.name : "unknown"} due to missing category.`);
+          return false;
+        }
+        const prodCatName = item.productId.categoryid.name.toLowerCase();
+        const filterCat = category.toLowerCase();
+        const match = prodCatName === filterCat;
+        console.log(`Comparing product category "${prodCatName}" to filter "${filterCat}": ${match}`);
+        return match;
+      });
+    }
+
+    // 4. Filter to include only products with status "Approved"
+    inventoryItems = inventoryItems.filter(item => item.productId && item.productId.status === 'Approved');
+
+    console.log("Filtered Inventory Items:", inventoryItems);
+    return res.status(200).json({ products: inventoryItems });
+  } catch (error) {
+    console.error("Error fetching products by cashier and category:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
+
+// Example endpoint: GET /api/cashier/:cashierId/orders
+router.get('/cashier/:cashierId/orders', async (req, res) => {
+  try {
+    const cashierId = req.params.cashierId;
+    // Find orders where the cashier field equals the logged-in cashier's id
+    const orders = await OrderOffline.find({ cashier: cashierId }).populate('items.productId');;
+    console.log("ordeeer", orders);
+    return res.json({ orders });
+  } catch (error) {
+    console.error('Error fetching orders for cashier:', error);
+    return res.status(500).json({ error: 'Server error.' });
+  }
+});
+
 
 
   return router;

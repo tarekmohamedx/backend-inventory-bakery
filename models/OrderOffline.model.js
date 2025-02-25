@@ -43,6 +43,11 @@ const orderSchema = new mongoose.Schema({
     enum: ["delivered", "canceled"],        
     default: "delivered",
   },
+  // Add a cashier field (if needed)
+  cashier: { 
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

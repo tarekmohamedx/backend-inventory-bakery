@@ -43,8 +43,7 @@ router.get("/order/:orderId", async (req, res) => {
 // ------------------------------
 router.post("/order", async (req, res) => {
   try {
-    const { items, totalAmount, Address, paymentMethod } = req.body;
-
+    const { items, totalAmount, Address, paymentMethod, cashier } = req.body;
     // Prepare order data
     const orderData = {
       items,
@@ -52,8 +51,10 @@ router.post("/order", async (req, res) => {
       Address,
       paymentMethod,
       orderStatus: "delivered",
+      cashier,
     };
 
+    console.log("orderdata: ", orderData);
     const newOrder = await orderService.createOrder(orderData);
 
     res.status(201).json({
@@ -144,12 +145,6 @@ router.patch('/orders/:orderId/update', async (req, res) => {
       return res.status(404).json({ error: 'Order not found.' });
     }
 
-    // Check if the order is within the 24-hour cancellation window.
-    const timeDiff = Date.now() - new Date(order.createdAt).getTime();
-    if (timeDiff > ONE_DAY_MS) {
-      return res.status(400).json({ error: 'Cancellation window expired. Orders cannot be updated after 24 hours.' });
-    }
-
     // Overwrite items, recalculate totalAmount
     order.items = items;
     order.totalAmount = items.reduce(
@@ -188,6 +183,7 @@ router.delete('/orders/:orderId', async (req, res) => {
     return res.status(500).json({ error: 'Server error.' });
   }
 });
+
 
 
 
