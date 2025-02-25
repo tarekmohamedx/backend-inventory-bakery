@@ -1,5 +1,6 @@
 const User = require('../models/users.model');
 const Order = require('../models/orders.model');
+const comment = require('../models/comment.model')
 
 const getUserRole = async (userId) => {
     try {
@@ -20,9 +21,24 @@ const deleteUser = async (userId) => {
     return await User.findOneAndDelete({ _id: userId });
   }
 
+// Fetch all comments 
+const fetchAllComments = async () => {
+    try {
+        return await Comment.find().sort({ createdAt: -1 });  
+    } catch (error) {
+        throw new Error("Error fetching comments: " + error.message);
+    }
+};
+
+// Delete a comment 
+const deleteComment = async (commentId) => {
+    return await Comment.findByIdAndDelete(commentId);
+};
 
 module.exports = {
     fetchOrderStatusByUser,
     getUserRole,
-    deleteUser
+    deleteUser,
+    fetchAllComments,
+    deleteComment
 }
