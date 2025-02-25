@@ -7,19 +7,19 @@ const mongoose = require("mongoose");
 
 
 module.exports.GetInventoryData = async()=>{
-     const inventory = await Inventory.find().populate({
-       path: "products.productId",
-       strictPopulate: false,
-     });
+    const inventory = await Inventory.find().populate({
+      path: "products.productId",
+      strictPopulate: false,
+    });
 
-     const populatedProducts = inventory
-       .map(
-         (inv) => inv.products.map((p) => p.productId) 
-       )
-       
+    const populatedProducts = inventory
+      .map(
+        (inv) => inv.products.map((p) => p.productId) 
+      )
+      
        .flat(); // Flatten if needed
 
-     return populatedProducts;
+    return populatedProducts;
 
 }
 // module.exports.getBranchStock = async(branchId)=>{
@@ -125,6 +125,8 @@ module.exports.getAllRequests = async () => {
 module.exports.changeRequestStat = async(requestId, newStatus, message)=>{
   try {
     const reqUpdated = await Restock.findByIdAndUpdate(requestId, {Status:newStatus, responseMessage:message}, { new: true })
+      // if(reqUpdated.Status == 'approved')
+      //   this.transferToBranch(reqUpdated._id);
     return reqUpdated;
     }catch (err){
       throw new Error(err.message);
@@ -182,59 +184,50 @@ module.exports.transferToMainInventory = async(productId)=>{
 }
 
 
-module.exports.transferToBranch = async(requestId)=>{
+module.exports.transferToBranch = async (requestId) => { 
   try {
-      const request = await Restock.findById(requestId)
-      if (!request) throw new Error("Request not found");
-      //product from product DB
-      const product = await productRepo.getProductById(request.productId);
-      if (!product) throw new Error("Product not found");
-      
-        //getting seller inventory object and array of products in it
-      const sellerId = product.sellerId;
-      const inventoryData = await Inventory.findOne({ sellerID: sellerId });
-          if (!inventoryData) throw new Error("Inventory not found");
-          console.log(inventoryData);
-          const productArray = inventoryData.products;
-          console.log(productArray);
+    const request = await Restock.findById(requestId);
+    if (!request) return { status: 404, message: "Request not found" };
 
-          const foundProduct = productArray.find(productItem => productItem.productId.equals(request.productId));
-          if (foundProduct) {
-            if(request.quantity > foundProduct.stockIn)
-              throw new Error("No enough stock in Inventory for this product");
+    const product = await productRepo.getProductById(request.productId);
+    if (!product) return { status: 404, message: "Product not found" };
 
-            else if(request.quantity <= foundProduct.stockIn){
-                    console.log("branchid: "+request.branchId );
-                    console.log("productId: "+request.productId );
+    const sellerId = product.sellerId;
+    const inventoryData = await Inventory.findOne({ sellerID: sellerId });
+    if (!inventoryData) return { status: 404, message: "Inventory not found" };
 
-                    const branchData = await Branch.BranchInventory.findOne({
-                          branchId: request.branchId,
-                       });
-              
-                  if(!branchData)
-                    throw new Error("Branch data was not found!");
+    const foundProduct = inventoryData.products.find(productItem => productItem.productId.equals(request.productId));
+    if (!foundProduct) return { status: 404, message: "Product does not exist in the Inventory." };
 
-                  console.log("Branch Data: "+ branchData);
-                  branchData.stockIn += request.quantity;
-                  await branchData.save();
+    if (request.quantity > foundProduct.stockIn) {
+      request.Status = 'pending';
+      await request.save();
+      return { status: 400, message: "Not enough stock in Inventory for this product" };
 
-                  foundProduct.stockIn -= request.quantity;
-                  await inventoryData.save();
-                  request.Status = "approved";
-                  request.responseMessage = "Requested Stock has been transfered";
-                  await request.save();
-
-                return request.responseMessage;
-            }
-          } else {
-            throw new Error("Product does not exist in the Inventory.");
-          }
-                
-      return;
-
-
-    }catch (err){
-      throw new Error(err.message);
     }
 
-}
+    const branchData = await Branch.BranchInventory.findOne({
+      branchId: request.branchId,
+      productId: request.productId,
+    });
+
+    if (!branchData) return { status: 404, message: "Branch data was not found!" };
+
+    branchData.stockIn += request.quantity;
+    await branchData.save();
+
+    foundProduct.stockIn -= request.quantity;
+    await inventoryData.save();
+
+    request.Status = "approved";
+    request.responseMessage = "Requested Stock has been transferred";
+    await request.save();
+
+    return { status: 200, message: request.responseMessage };
+
+  } catch (err) {
+    console.error("Error in transferToBranch:", err);
+    return { status: 500, message: err.message };
+  }
+};
+
