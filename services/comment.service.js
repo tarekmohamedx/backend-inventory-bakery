@@ -17,7 +17,7 @@ async getComments(user){
    
  return await commentRepo.getAllComments()
     
-    //return await commentRepo.getCommentsByUser(user.id)
+   
 }
 async deleteComment(commentId) {
     return await commentRepo.deleteComment(commentId);
