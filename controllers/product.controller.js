@@ -71,7 +71,8 @@ module.exports = (() => {
   });
 
   // Create product
-  router.post("/products", verifyToken ,async (req, res) => {
+   // Create product
+   router.post("/products", verifyToken ,async (req, res) => {
     try {
       const user = req.user;
       console.log("req,user", user);
@@ -84,47 +85,26 @@ module.exports = (() => {
       // Convert values to correct types
       const parsedPrice = parseFloat(req.body.price);
       const parsedStock = parseInt(req.body.stock, 10);
-      const parsedPreviousPrice = req.body.previousprice
-        ? parseFloat(req.body.previousprice)
-        : undefined;
+      const parsedPreviousPrice = req.body.previousprice ? parseFloat(req.body.previousprice) : undefined;
       const parsedSales = req.body.sales ? parseInt(req.body.sales, 10) : 0;
-      const parsedDiscounted = req.body.discounted === "true";
+      const parsedDiscounted = req.body.discounted === "true"; // Convert "true" string to boolean
+
+      // Validate required fields (categoryid removed)
       if (isNaN(parsedPrice) || isNaN(parsedStock)) {
         return res.status(400).json({
           error: "Missing or invalid required fields: `price`, `stock`",
         });
       }
 
-      let branches = req.body.branches;
-      if (typeof branches === 'string') {
-        branches = JSON.parse(branches);
-      }
-
-      console.log("Parsed Branches:", branches);
-
-      let branchNames = [];
-      let totalStock = 0;
-
-      if (Array.isArray(branches)) {
-        branches.forEach(branch => {
-          if (branch.branch && branch.quantity) {
-            branchNames.push(branch.branch);
-            totalStock += parseInt(branch.quantity);
-          }
-        });
-      }
-      console.log("Final Branch Names:", branchNames);
-      console.log("Total Stock:", totalStock);
+      // Check if images are provided
       if (!req.files || Object.keys(req.files).length === 0) {
-        return res
-          .status(400)
-          .json({ error: "At least one image file is required" });
+        return res.status(400).json({ error: "At least one image file is required" });
       }
-      const uploadedFiles = req.files?.images
-        ? Array.isArray(req.files.images)
-          ? req.files.images
-          : [req.files.images]
-        : [];
+
+      // Ensure `req.files.images` is an array
+      // const uploadedFiles = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
+      const uploadedFiles = req.files?.images? (Array.isArray(req.files.images) ? req.files.images : [req.files.images]): [];
+
 
       // Upload images to ImageKit
       const uploadedImages = await Promise.all(
@@ -145,32 +125,33 @@ module.exports = (() => {
 
       console.log("ImageKit Upload URLs:", uploadedImages);
 
-      // Create a new product
+      // Create new product without categoryid
       const newProduct = await Product.create({
         name: req.body.name,
         description: req.body.description,
         price: parsedPrice,
         previousprice: parsedPreviousPrice,
         sales: parsedSales,
-        stock: totalStock,
+        stock: parsedStock,
         flavor: req.body.flavor,
         discounted: parsedDiscounted,
-        images: uploadedImages,
+        images: uploadedImages, // Images uploaded successfully
         categoryid: req.body.categoryid,
         sellerId: user.userId,
         accentColor: req.body.accentColor || '#0B374D',
         status: req.body.status || 'Pending',
-        branch: branchNames,
+        
       });
 
       return res.status(201).json(newProduct);
     } catch (error) {
       console.error("Error processing product creation:", error);
-      return res
-        .status(500)
-        .json({ error: error.message || "Internal Server Error" });
+      return res.status(500).json({ error: error.message || "Internal Server Error" });
     }
   });
+  
+
+
 
   // update products
   router.put("/products/:id", async (req, res, next) => {
