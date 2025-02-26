@@ -156,9 +156,9 @@ const transferfromadmintobranch = async (req, res) => {
     const transferQuantity = Math.max(Math.floor(product.stock * 0.1), 1);
 
     if (product.stock < transferQuantity){
+      return res.status(400).json({ message: "Not enough stock for transfer" });
         
     }
-      return res.status(400).json({ message: "Not enough stock for transfer" });
 
     // Find branch inventory for the specific product
     let branchInventory = await BranchInventory.findOne({
