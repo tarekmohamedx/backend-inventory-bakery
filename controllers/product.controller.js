@@ -6,7 +6,7 @@ const Branch = require('../models/branchinventory.model').Branch;
 const BranchInventory = require('../models/branchinventory.model').BranchInventory;
 const OrderOffline = require('../models/OrderOffline.model');
 const verifyToken = require("../middlewere/authentication.middlewere");
-const InventoryService = require('../services/inventory.service')
+const InventoryService = require('../services/inventory.service');
 
 const router = express.Router();
 const imagekit = new ImageKit({

@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const InventoryService = require('../services/inventory.service');
-const { BranchInventory } = require("../models/branchinventory.model");
+const { BranchInventory, Branch } = require("../models/branchinventory.model");
 const Product = require('../models/Product.model');
+const OrderOffline = require('../models/OrderOffline.model');
 
 
 const getInventoryData = async (req, res)=>{
@@ -224,7 +225,46 @@ const getProductsByCashier = async (cashierId) => {
   }
 };
 
+// getBranchByCashierId = async(cashierId)=>{
+//     return await Branch.findOne({ cashiers: cashierId }, { _id: 1 });
+// }
+// Z
 
+
+
+const getOrdersByBranch = async(req, res)=>{
+    try {
+        const cashierId = req.params.cashierId;
+        const orders = await OrderOffline.find({cashier:cashierId});
+         return res.status(200).json({
+            orders
+             })
+        
+    } catch (error) {
+        res.status(200).json({
+           message: error.message
+        })
+    }
+
+    
+}
+
+getRequestsForBranch = async(req,res)=>{
+    try {
+        const branchId = req.params.branchId;
+        const requests = await InventoryService.getRequestsForBranch(branchId);
+        res.status(200)
+            .json({
+                requests
+            })
+        
+    } catch (error) {
+        res.status(200).json({
+                       message: error.message
+            })
+    }
+
+}
 
 router.get('/all', getInventoryData);
 router.get('/branch/:branchId', getBranchStock);
@@ -237,7 +277,9 @@ router.get('/requests', getAllRequests);
 router.put('/stockReq/:requestId', changeRequestStat);
 router.post('/transfer/:requestId', transferToBranch);
 router.post('/transferfromadmintobranch', transferfromadmintobranch);
-
+router.post('/transferfromadmintobranch', transferfromadmintobranch);
+router.get('/branch/orders/:cashierId', getOrdersByBranch);
+router.get('/branch/requests/:branchId', getRequestsForBranch);
 
 
 module.exports = router;
