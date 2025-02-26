@@ -22,3 +22,29 @@ module.exports.updateSeller = async(sellerId,sellerData)=>{
 module.exports.deleteSeller = async(sellerID)=>{
     return await sellerRepo.deleteSeller(sellerID)
 }
+// get sellers stats
+module.exports.getSellerStats = async (sellerId) => {
+    return await sellerRepo.getSellerStats(sellerId);
+  };
+
+ 
+
+async function getSellerDashboardStats(sellerId) {
+    const seller = await sellerRepo.getSellerById(sellerId);
+    if (!seller) return null;
+
+    // Calculate total money, customer count, and get top products
+    const totalMoney = await sellerRepo.getTotalSales(sellerId);
+    const latestOrders = await sellerRepo.getLatestOrders(sellerId);
+    const customers = await sellerRepo.getCustomerCount(sellerId);
+    const topProducts = await sellerRepo.getTopSellingProducts(sellerId);
+
+    return {
+        totalSales: totalMoney,
+        latestOrders,
+        customers,
+        topProducts,
+    };
+}
+
+module.exports = { getSellerDashboardStats };

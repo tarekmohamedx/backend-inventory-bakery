@@ -9,13 +9,31 @@ const addressSchema = new mongoose.Schema({
 })
 
 const SellerSchema = new mongoose.Schema({
-  storeName: { type: String },
+  _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // Ensure each seller has an ID
+  storeName: { type: String, required: true },
   products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
   totalSales: { type: Number, default: 0 },
   totalProfits: { type: Number, default: 0 },
   totalProducts: { type: Number, default: 0 },
-  rating: { type: Number, min: 0, max: 5, default: 0 }
-}, { _id: false });
+  rating: { type: Number, min: 0, max: 5, default: 0 },
+
+  // New fields for the dashboard
+  latestOrders: [
+    {
+      orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
+      date: { type: Date, default: Date.now },
+      totalAmount: { type: Number, required: true },
+    }
+  ],
+  customers: { type: Number, default: 0 },
+  topProducts: [
+    {
+      productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      name: { type: String },
+      sales: { type: Number, default: 0 },
+    }
+  ]
+});
 
 const userSchema = new mongoose.Schema({
   firstName: { type: String},
