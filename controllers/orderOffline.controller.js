@@ -5,6 +5,7 @@ const httpStatusText = require("../utils/httpStatusText");
 const verifyToken  = require("../middlewere/authentication.middlewere");
 const { clearCashierCartService } = require("../services/orderOffline.service");
 const OrderOffline = require('../models/OrderOffline.model'); 
+const BranchInventory = require('../models/branchinventory.model').BranchInventory;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 const jwt = require("jsonwebtoken");
 
@@ -94,17 +95,17 @@ router.post("/cashier/clear-cart",verifyToken ,async (req, res) => {
 });
 
 
-// router.patch("/order/changestatus/:id", async (req, res) => {
-//   const { id } = req.params;
-//   const { orderStatus } = req.body;
-//   try {
-//     const orderr = await Order.findByIdAndUpdate(id, { orderStatus: orderStatus }, { new: true });
-//     if (!orderr) return res.status(404).send('Order not found');
-//     res.send(orderr);
-//   } catch (error) {
-//     res.status(500).send(error);
-//   }
-// });
+router.patch("/order/changestatus/:id", async (req, res) => {
+  const { id } = req.params;
+  const { orderStatus } = req.body;
+  try {
+    const orderr = await Order.findByIdAndUpdate(id, { orderStatus: orderStatus }, { new: true });
+    if (!orderr) return res.status(404).send('Order not found');
+    res.send(orderr);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
 
 router.patch('/orders/:orderId/cancel', async (req, res) => {
   try {
@@ -130,6 +131,53 @@ router.patch('/orders/:orderId/cancel', async (req, res) => {
     return res.status(500).json({ error: 'Server error.' });
   }
 });
+
+
+// router.patch('/orders/:orderId/cancel', async (req, res) => {
+//   try {
+//     const order = await OrderOffline.findById(req.params.orderId);
+//     if (!order) {
+//       return res.status(404).json({ error: 'Order not found.' });
+//     }
+
+//     // Check if the order is within the 24-hour cancellation window.
+//     const timeDiff = Date.now() - new Date(order.createdAt).getTime();
+//     if (timeDiff > ONE_DAY_MS) {
+//       return res.status(400).json({ error: 'Cancellation window expired. Orders cannot be canceled after 24 hours.' });
+//     }
+
+//     // Update order status to "canceled" and update the updatedAt field.
+//     order.orderStatus = 'canceled';
+//     order.updatedAt = Date.now();
+//     await order.save();
+
+//     // For each order item, reverse the inventory changes:
+//     for (const item of order.items) {
+//       const productId = item.productId; // assuming productId is stored as an ObjectId or similar.
+//       const quantity = item.quantity;
+
+//       // Update branch inventory: Increase stockIn, decrease stockOut, and restore currentStock.
+//       const inventory = await BranchInventory.findOne({ productId });
+//       if (inventory) {
+//         inventory.stockIn = (inventory.stockIn || 0) + quantity;
+//         inventory.stockOut = (inventory.stockOut || 0) - quantity;
+//         inventory.currentStock = (inventory.currentStock || 0) + quantity;
+//         await inventory.save();
+//       } else {
+//         console.warn("No branch inventory record found for productId:", productId);
+//       }
+
+//       // Update the overall product stock.
+//       await Product.findByIdAndUpdate(productId, { $inc: { stock: quantity } });
+//     }
+
+//     return res.json({ message: 'Order canceled successfully.', order });
+//   } catch (error) {
+//     console.error('Error canceling order:', error);
+//     return res.status(500).json({ error: 'Server error.' });
+//   }
+// });
+
 
 router.patch('/orders/:orderId/update', async (req, res) => {
   try {
