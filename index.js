@@ -12,7 +12,6 @@ const adminController = require('./controllers/admin.controller')
 const sellerRouter =require("./controllers/seller.controller.js");
 InventoryController = require('./controllers/inventory.controller');
 
-
 const app = express();
 app.use(cors({
   origin: "http://localhost:4200", // Adjust this to match your frontend URL
@@ -75,6 +74,8 @@ app.use('/api/inventory', InventoryController);
 
 
 const userProfileRoutes = require('./routes/UserProfile1.route.js');
+const commentController = require("./controllers/comment.controller.js");
+app.use('/api/comments',commentController);
 app.use('/api/users', userProfileRoutes);
 
 
