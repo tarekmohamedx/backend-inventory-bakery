@@ -260,7 +260,7 @@ getRequestsForBranch = async(req,res)=>{
         
     } catch (error) {
         res.status(200).json({
-                       message: error.message
+                    message: error.message
             })
     }
 
@@ -281,5 +281,6 @@ router.post('/transferfromadmintobranch', transferfromadmintobranch);
 router.get('/branch/orders/:cashierId', getOrdersByBranch);
 router.get('/branch/requests/:branchId', getRequestsForBranch);
 
+// /inventory/branch/requests/
 
 module.exports = router;
