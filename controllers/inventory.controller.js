@@ -4,6 +4,53 @@ const InventoryService = require('../services/inventory.service');
 const { BranchInventory, Branch } = require("../models/branchinventory.model");
 const Product = require('../models/Product.model');
 const OrderOffline = require('../models/OrderOffline.model');
+const Inventory = require('../models/inventory.model')
+
+
+// GET /inventory?category=<categoryName>
+router.get("/inventory", async (req, res) => {
+    try {
+      const categoryName = req.query.category;
+      if (!categoryName) {
+        return res.status(400).json({ error: "Category query parameter is required" });
+      }
+  
+      // Find all inventories and populate products.productId and productId.categoryid
+      let inventories = await Inventory.find({})
+        .populate({
+          path: "products.productId",
+          populate: { 
+            path: "categoryid", 
+            select: "name" 
+          }
+        })
+        .lean();
+  
+      // For each inventory document, filter products by category name
+      const filteredInventories = inventories
+        .map(inv => {
+          const filteredProducts = inv.products.filter(prod => {
+            // Ensure product and its category exist
+            return prod.productId &&
+              prod.productId.categoryid &&
+              prod.productId.categoryid.name &&
+              prod.productId.categoryid.name.toLowerCase() === categoryName.toLowerCase();
+          });
+          return { ...inv, products: filteredProducts };
+        })
+        // Only return inventories with at least one matching product
+        .filter(inv => inv.products.length > 0);
+
+        console.log("filteredInventories: ", filteredInventories)
+  
+      return res.status(200).json(filteredInventories);
+    } catch (error) {
+      console.error("Error fetching inventory by category:", error);
+      return res.status(500).json({ error: "Server error" });
+    }
+  });
+  
+
 
 
 const getInventoryData = async (req, res)=>{
