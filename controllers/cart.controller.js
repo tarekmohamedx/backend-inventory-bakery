@@ -217,7 +217,7 @@ router.put('/update/:id', async (req, res) => {
     if (inventory) {
       if (delta > 0) {
         // Increasing quantity: more items are leaving inventory.
-        inventory.stockOut += delta;
+        inventory.stockOut -= delta;
         inventory.currentStock -= delta;
       } else if (delta < 0) {
         // Decreasing quantity: return items to inventory.

@@ -7,7 +7,7 @@ const BranchInventory = require('../models/branchinventory.model').BranchInvento
 const OrderOffline = require('../models/OrderOffline.model');
 const mongoose = require('mongoose');
 const verifyToken = require("../middlewere/authentication.middlewere");
-const InventoryService = require('../services/inventory.service')
+const InventoryService = require('../services/inventory.service');
 
 const router = express.Router();
 const imagekit = new ImageKit({
@@ -106,24 +106,24 @@ module.exports = (() => {
       const uploadedFiles = req.files?.images? (Array.isArray(req.files.images) ? req.files.images : [req.files.images]): [];
 
 
-      // Upload images to ImageKit
-      const uploadedImages = await Promise.all(
-        uploadedFiles.map(async (file) => {
-          try {
-            const uploaded = await imagekit.upload({
-              file: file.data,
-              fileName: file.name,
-              folder: "/products",
-            });
-            return uploaded.url;
-          } catch (uploadError) {
-            console.error("Error uploading image:", uploadError);
-            throw new Error("Image upload failed");
-          }
-        })
-      );
+  //     // Upload images to ImageKit
+  //     const uploadedImages = await Promise.all(
+  //       uploadedFiles.map(async (file) => {
+  //         try {
+  //           const uploaded = await imagekit.upload({
+  //             file: file.data,
+  //             fileName: file.name,
+  //             folder: "/products",
+  //           });
+  //           return uploaded.url;
+  //         } catch (uploadError) {
+  //           console.error("Error uploading image:", uploadError);
+  //           throw new Error("Image upload failed");
+  //         }
+  //       })
+  //     );
 
-      console.log("ImageKit Upload URLs:", uploadedImages);
+  //     console.log("ImageKit Upload URLs:", uploadedImages);
 
       // Create new product without categoryid
       const newProduct = await Product.create({

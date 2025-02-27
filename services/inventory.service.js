@@ -3,6 +3,7 @@ const Branch = require('../models/branchinventory.model');
 const Restock = require('../models/Restock.model')
 const productRepo = require('../repos/product.repo')
 const mongoose = require("mongoose");
+const OrderOffline = require('../models/OrderOffline.model');
 
 
 
@@ -230,4 +231,19 @@ module.exports.transferToBranch = async (requestId) => {
     return { status: 500, message: err.message };
   }
 };
+
+
+module.exports.getRequestsForBranch = async(branchId)=>{
+  try {
+    const requests = await Restock.find({branchId:branchId});
+    return {
+       status: 200, 
+        requests
+     };
+
+  } catch (err) {
+    console.error("Error in transferToBranch:", err);
+    return { status: 500, message: err.message };
+  }
+}
 

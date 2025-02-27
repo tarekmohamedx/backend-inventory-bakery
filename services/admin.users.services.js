@@ -1,6 +1,8 @@
 const userService = require('./users.service');
 const User = require('../models/users.model')
 const adminUserRepo = require('../repos/admin.user.repo');
+const Inventory = require('../models/inventory.model');
+
 
 const getUserByRole = async (role)=>{
     try{
@@ -21,7 +23,9 @@ const removeCustomer = async(userId)=>{
 }
 
 const removeSeller = async(userId)=>{
-
+        const sellerProducts = await Inventory.find({sellerID: userId});
+        if(sellerProducts)
+             throw new Error("Seller has products and can't be deleted, Remove his products first");
 }
 const removeUser = async (userId)=>{
     try{
@@ -31,6 +35,8 @@ const removeUser = async (userId)=>{
         else if(userRole == 'Admin'){
             throw new Error("You cannot remove your own role");
         }
+        else if(userRole == 'Seller')
+            return await removeSeller(userId);
         else 
             return await adminUserRepo.deleteUser(userId);
 

@@ -35,7 +35,7 @@ const removeUser = async(req, res)=>{
             const response = await adminService.removeUser(userId);
             return res.status(200).json({
                 response,
-                message: "User has been deleted"
+                message: response
             })            
         }
         catch(err){
