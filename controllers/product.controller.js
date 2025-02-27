@@ -5,6 +5,7 @@ const ImageKit = require("imagekit");
 const Branch = require('../models/branchinventory.model').Branch;
 const BranchInventory = require('../models/branchinventory.model').BranchInventory;
 const OrderOffline = require('../models/OrderOffline.model');
+const mongoose = require('mongoose');
 const verifyToken = require("../middlewere/authentication.middlewere");
 const InventoryService = require('../services/inventory.service')
 
@@ -70,7 +71,6 @@ module.exports = (() => {
     }
   });
 
-  // Create product
    // Create product
    router.post("/products", verifyToken ,async (req, res) => {
     try {
@@ -194,7 +194,7 @@ module.exports = (() => {
       console.log("Query Params:", req.query);
       const category = req.query.category;
       const products = await productService.findByCategory(category);
-      const filteredProducts = products.filter(p =>p.status === 'Approved' && p.branch.includes('MainBranch'));
+      const filteredProducts = products.filter(p =>p.status === 'Approved');
       console.log("filteredProducts: ", filteredProducts);
       // console.log("filteredProductsbyBranch: ", filteredProducts.filter(p=>p.branch.includes('MainBranch')));
       res.status(200).json(filteredProducts);
@@ -458,6 +458,29 @@ router.get('/cashier/:cashierId/orders', async (req, res) => {
   } catch (error) {
     console.error('Error fetching orders for cashier:', error);
     return res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+router.get('/inventory/:productId', async (req, res) => {
+  try {
+    const { productId } = req.params;
+    
+    // Validate productId format
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ error: 'Invalid product id format' });
+    }
+    const inventory = await BranchInventory.findOne({ productId }).lean();
+    
+    if (!inventory) {
+      return res.status(404).json({ error: 'Inventory record not found for this product' });
+    }
+
+    console.log("inventory", inventory);
+    
+    return res.status(200).json(inventory);
+  } catch (error) {
+    console.error("Error fetching inventory:", error);
+    return res.status(500).json({ error: 'Server error' });
   }
 });
 
