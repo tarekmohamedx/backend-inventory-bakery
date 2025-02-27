@@ -213,7 +213,7 @@ module.exports = (() => {
       console.log("Query Params:", req.query);
       const category = req.query.category;
       const products = await productService.findByCategory(category);
-      const filteredProducts = products.filter(p =>p.status === 'Approved' && p.branch.includes('MainBranch'));
+      const filteredProducts = products.filter(p =>p.status === 'Approved');
       console.log("filteredProducts: ", filteredProducts);
       // console.log("filteredProductsbyBranch: ", filteredProducts.filter(p=>p.branch.includes('MainBranch')));
       res.status(200).json(filteredProducts);
