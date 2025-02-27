@@ -70,107 +70,195 @@ module.exports = (() => {
     }
   });
 
-  // Create product
-  router.post("/products", verifyToken ,async (req, res) => {
-    try {
-      const user = req.user;
-      console.log("req,user", user);
-      if (user.role !== 'Seller' && user.role !== 'Admin') {
-        return res.status(403).json({ message: 'You do not have permission to add a product' });
-      }
-      console.log("Request Body:", req.body);
-      console.log("Uploaded Files:", req.files);
+  // // Create product
+  // router.post("/products", verifyToken ,async (req, res) => {
+  //   try {
+  //     const user = req.user;
+  //     console.log("req,user", user);
+  //     if (user.role !== 'Seller' && user.role !== 'Admin') {
+  //       return res.status(403).json({ message: 'You do not have permission to add a product' });
+  //     }
+  //     console.log("Request Body:", req.body);
+  //     console.log("Uploaded Files:", req.files);
 
-      // Convert values to correct types
-      const parsedPrice = parseFloat(req.body.price);
-      const parsedStock = parseInt(req.body.stock, 10);
-      const parsedPreviousPrice = req.body.previousprice
-        ? parseFloat(req.body.previousprice)
-        : undefined;
-      const parsedSales = req.body.sales ? parseInt(req.body.sales, 10) : 0;
-      const parsedDiscounted = req.body.discounted === "true";
-      if (isNaN(parsedPrice) || isNaN(parsedStock)) {
-        return res.status(400).json({
-          error: "Missing or invalid required fields: `price`, `stock`",
-        });
-      }
+  //     // Convert values to correct types
+  //     const parsedPrice = parseFloat(req.body.price);
+  //     const parsedStock = parseInt(req.body.stock, 10);
+  //     const parsedPreviousPrice = req.body.previousprice
+  //       ? parseFloat(req.body.previousprice)
+  //       : undefined;
+  //     const parsedSales = req.body.sales ? parseInt(req.body.sales, 10) : 0;
+  //     const parsedDiscounted = req.body.discounted === "true";
+  //     if (isNaN(parsedPrice) || isNaN(parsedStock)) {
+  //       return res.status(400).json({
+  //         error: "Missing or invalid required fields: `price`, `stock`",
+  //       });
+  //     }
 
-      let branches = req.body.branches;
-      if (typeof branches === 'string') {
-        branches = JSON.parse(branches);
-      }
+  //     let branches = req.body.branches;
+  //     if (typeof branches === 'string') {
+  //       branches = JSON.parse(branches);
+  //     }
 
-      console.log("Parsed Branches:", branches);
+  //     console.log("Parsed Branches:", branches);
 
-      let branchNames = [];
-      let totalStock = 0;
+  //     let branchNames = [];
+  //     let totalStock = 0;
 
-      if (Array.isArray(branches)) {
-        branches.forEach(branch => {
-          if (branch.branch && branch.quantity) {
-            branchNames.push(branch.branch);
-            totalStock += parseInt(branch.quantity);
-          }
-        });
-      }
-      console.log("Final Branch Names:", branchNames);
-      console.log("Total Stock:", totalStock);
-      if (!req.files || Object.keys(req.files).length === 0) {
-        return res
-          .status(400)
-          .json({ error: "At least one image file is required" });
-      }
-      const uploadedFiles = req.files?.images
-        ? Array.isArray(req.files.images)
-          ? req.files.images
-          : [req.files.images]
-        : [];
+  //     if (Array.isArray(branches)) {
+  //       branches.forEach(branch => {
+  //         if (branch.branch && branch.quantity) {
+  //           branchNames.push(branch.branch);
+  //           totalStock += parseInt(branch.quantity);
+  //         }
+  //       });
+  //     }
+  //     console.log("Final Branch Names:", branchNames);
+  //     console.log("Total Stock:", totalStock);
+  //     if (!req.files || Object.keys(req.files).length === 0) {
+  //       return res
+  //         .status(400)
+  //         .json({ error: "At least one image file is required" });
+  //     }
+  //     const uploadedFiles = req.files?.images
+  //       ? Array.isArray(req.files.images)
+  //         ? req.files.images
+  //         : [req.files.images]
+  //       : [];
 
-      // Upload images to ImageKit
-      const uploadedImages = await Promise.all(
-        uploadedFiles.map(async (file) => {
-          try {
-            const uploaded = await imagekit.upload({
-              file: file.data,
-              fileName: file.name,
-              folder: "/products",
-            });
-            return uploaded.url;
-          } catch (uploadError) {
-            console.error("Error uploading image:", uploadError);
-            throw new Error("Image upload failed");
-          }
-        })
-      );
+  //     // Upload images to ImageKit
+  //     const uploadedImages = await Promise.all(
+  //       uploadedFiles.map(async (file) => {
+  //         try {
+  //           const uploaded = await imagekit.upload({
+  //             file: file.data,
+  //             fileName: file.name,
+  //             folder: "/products",
+  //           });
+  //           return uploaded.url;
+  //         } catch (uploadError) {
+  //           console.error("Error uploading image:", uploadError);
+  //           throw new Error("Image upload failed");
+  //         }
+  //       })
+  //     );
 
-      console.log("ImageKit Upload URLs:", uploadedImages);
+  //     console.log("ImageKit Upload URLs:", uploadedImages);
 
-      // Create a new product
-      const newProduct = await Product.create({
-        name: req.body.name,
-        description: req.body.description,
-        price: parsedPrice,
-        previousprice: parsedPreviousPrice,
-        sales: parsedSales,
-        stock: totalStock,
-        flavor: req.body.flavor,
-        discounted: parsedDiscounted,
-        images: uploadedImages,
-        categoryid: req.body.categoryid,
-        sellerId: user.userId,
-        accentColor: req.body.accentColor || '#0B374D',
-        status: req.body.status || 'Pending',
-        branch: branchNames,
-      });
+  //     // Create a new product
+  //     const newProduct = await Product.create({
+  //       name: req.body.name,
+  //       description: req.body.description,
+  //       price: parsedPrice,
+  //       previousprice: parsedPreviousPrice,
+  //       sales: parsedSales,
+  //       stock: totalStock,
+  //       flavor: req.body.flavor,
+  //       discounted: parsedDiscounted,
+  //       images: uploadedImages,
+  //       categoryid: req.body.categoryid,
+  //       sellerId: user.userId,
+  //       accentColor: req.body.accentColor || '#0B374D',
+  //       status: req.body.status || 'Pending',
+  //       branch: branchNames,
+  //     });
 
-      return res.status(201).json(newProduct);
-    } catch (error) {
-      console.error("Error processing product creation:", error);
+  //     return res.status(201).json(newProduct);
+  //   } catch (error) {
+  //     console.error("Error processing product creation:", error);
+  //     return res
+  //       .status(500)
+  //       .json({ error: error.message || "Internal Server Error" });
+  //   }
+  // });
+
+router.post("/products", verifyToken, async (req, res) => {
+  try {
+    const user = req.user;
+    console.log("req,user", user);
+    if (user.role !== "Seller" && user.role !== "Admin") {
       return res
-        .status(500)
-        .json({ error: error.message || "Internal Server Error" });
+        .status(403)
+        .json({ message: "You do not have permission to add a product" });
     }
-  });
+    console.log("Request Body:", req.body);
+    console.log("Uploaded Files:", req.files);
+
+    // Convert values to correct types
+    const parsedPrice = parseFloat(req.body.price);
+    const parsedStock = parseInt(req.body.stock, 10);
+    const parsedPreviousPrice = req.body.previousprice
+      ? parseFloat(req.body.previousprice)
+      : undefined;
+    const parsedSales = req.body.sales ? parseInt(req.body.sales, 10) : 0;
+    const parsedDiscounted = req.body.discounted === "true"; // Convert "true" string to boolean
+
+    // Validate required fields (categoryid removed)
+    if (isNaN(parsedPrice) || isNaN(parsedStock)) {
+      return res.status(400).json({
+        error: "Missing or invalid required fields: price, stock",
+      });
+    }
+
+    // Check if images are provided
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res
+        .status(400)
+        .json({ error: "At least one image file is required" });
+    }
+
+    // Ensure req.files.images is an array
+    // const uploadedFiles = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
+    const uploadedFiles = req.files?.images
+      ? Array.isArray(req.files.images)
+        ? req.files.images
+        : [req.files.images]
+      : [];
+
+    // Upload images to ImageKit
+    const uploadedImages = await Promise.all(
+      uploadedFiles.map(async (file) => {
+        try {
+          const uploaded = await imagekit.upload({
+            file: file.data,
+            fileName: file.name,
+            folder: "/products",
+          });
+          return uploaded.url;
+        } catch (uploadError) {
+          console.error("Error uploading image:", uploadError);
+          throw new Error("Image upload failed");
+        }
+      })
+    );
+
+    console.log("ImageKit Upload URLs:", uploadedImages);
+
+    // Create new product without categoryid
+    const newProduct = await Product.create({
+      name: req.body.name,
+      description: req.body.description,
+      price: parsedPrice,
+      previousprice: parsedPreviousPrice,
+      sales: parsedSales,
+      stock: parsedStock,
+      flavor: req.body.flavor,
+      discounted: parsedDiscounted,
+      images: uploadedImages, // Images uploaded successfully
+      categoryid: req.body.categoryid,
+      sellerId: user.userId,
+      accentColor: req.body.accentColor || "#0B374D",
+      status: req.body.status || "Pending",
+    });
+
+    return res.status(201).json(newProduct);
+  } catch (error) {
+    console.error("Error processing product creation:", error);
+    return res
+      .status(500)
+      .json({ error: error.message || "Internal Server Error" });
+  }
+});
 
   // update products
   router.put("/products/:id", async (req, res, next) => {
