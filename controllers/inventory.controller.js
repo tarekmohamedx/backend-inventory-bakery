@@ -54,17 +54,29 @@ router.get("/inventory", async (req, res) => {
 
 
 const getInventoryData = async (req, res)=>{
-        try{
-            const InventoryData = await InventoryService.GetInventoryData();
-            res.status(200).json(
-                InventoryData
-            );
-        }catch(err){
-                res.status(400).json({
-                    err
-                })
-        }
+    try{
+        const InventoryData = await InventoryService.GetInventoryData();
+        res.status(200).json(
+            InventoryData
+        );
+    }catch(err){
+      res.status(400).json({
+          err
+      })
+    }
 }
+
+const getInventoryDatafinal = async (req, res)=>{
+    try{
+        const InventoryData = await InventoryService.getInventoryDatafinal();
+        res.status(200).json(
+            InventoryData
+        );
+    }catch(err){
+      res.status(400).json({
+          err
+      })
+    }}
 
 
 const getBranchStock = async (req, res)=>{
@@ -201,7 +213,7 @@ const transferfromadmintobranch = async (req, res) => {
       return res.status(400).json({ message: "Stock is empty" });
 
     // 10% transfer, but at least 1 unit
-    const transferQuantity = Math.max(Math.floor(product.stock * 0.1), 1);
+    const transferQuantity = Math.max(Math.floor(product.stock * 0.5), 1);
 
     if (product.stock < transferQuantity){
       return res.status(400).json({ message: "Not enough stock for transfer" });
@@ -314,6 +326,7 @@ getRequestsForBranch = async(req,res)=>{
 }
 
 router.get('/all', getInventoryData);
+router.get('/allfinal', getInventoryDatafinal);
 router.get('/branch/:branchId', getBranchStock);
 router.get('/branch/info/:branchId', getBranchInfo);
 router.get('/branches', getAllBranches);

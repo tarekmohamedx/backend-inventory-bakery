@@ -602,9 +602,6 @@ router.put('/homeupdate/:id', async (req, res) => {
     } else {
       console.warn("No inventory record found for productId:", itemId);
     }
-
-    // Update the overall product stock accordingly:
-    // If delta is positive, subtract from product stock; if negative, add back.
     await Product.findByIdAndUpdate(itemId, { $inc: { stock: -delta } });
 
     // Optionally, update the JWT with the new cart data.
@@ -656,8 +653,6 @@ router.delete('/homeitems/:id', async (req, res) => {
     // Remove the item from the user's cart
     user.cartItems.splice(itemIndex, 1);
     await user.save();
-    
-    // Update inventory schema: find the document containing this product
     const inventory = await Inventory.findOne({ "products.productId": productId });
     if (inventory) {
       // Locate the subdocument for this product
@@ -666,9 +661,7 @@ router.delete('/homeitems/:id', async (req, res) => {
       );
       
       if (productSubdoc) {
-        // Reverse the stockOut by subtracting quantity
         productSubdoc.stockOut = (productSubdoc.stockOut || 0) - quantity;
-        // Increase stockIn by the removed quantity
         productSubdoc.stockIn = (productSubdoc.stockIn || 0) + quantity;
       } else {
         console.warn("No subdocument found for productId:", productId);
@@ -678,8 +671,6 @@ router.delete('/homeitems/:id', async (req, res) => {
     } else {
       console.warn("No inventory document found containing productId:", productId);
     }
-    
-    // Update the overall product stock: increase the product stock by the removed quantity
     await Product.findByIdAndUpdate(productId, { $inc: { stock: quantity } });
     
     return res.status(200).json({ status: httpStatusText.SUCCESS, data: user.cartItems });

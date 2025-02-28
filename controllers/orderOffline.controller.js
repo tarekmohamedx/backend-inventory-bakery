@@ -7,6 +7,7 @@ const { clearCashierCartService } = require("../services/orderOffline.service");
 const OrderOffline = require('../models/OrderOffline.model'); 
 const BranchInventory = require('../models/branchinventory.model').BranchInventory;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const Product = require('../models/Product.model')
 const jwt = require("jsonwebtoken");
 
 // ------------------------------
@@ -107,32 +108,6 @@ router.patch("/order/changestatus/:id", async (req, res) => {
   }
 });
 
-router.patch('/orders/:orderId/cancel', async (req, res) => {
-  try {
-    const order = await OrderOffline.findById(req.params.orderId);
-    if (!order) {
-      return res.status(404).json({ error: 'Order not found.' });
-    }
-
-    // Check if the order is within the 24-hour cancellation window.
-    const timeDiff = Date.now() - new Date(order.createdAt).getTime();
-    if (timeDiff > ONE_DAY_MS) {
-      return res.status(400).json({ error: 'Cancellation window expired. Orders cannot be canceled after 24 hours.' });
-    }
-
-    // Update order status to "canceled" and update the updatedAt field.
-    order.orderStatus = 'canceled';
-    order.updatedAt = Date.now();
-    await order.save();
-
-    return res.json({ message: 'Order canceled successfully.', order });
-  } catch (error) {
-    console.error('Error canceling order:', error);
-    return res.status(500).json({ error: 'Server error.' });
-  }
-});
-
-
 // router.patch('/orders/:orderId/cancel', async (req, res) => {
 //   try {
 //     const order = await OrderOffline.findById(req.params.orderId);
@@ -151,26 +126,6 @@ router.patch('/orders/:orderId/cancel', async (req, res) => {
 //     order.updatedAt = Date.now();
 //     await order.save();
 
-//     // For each order item, reverse the inventory changes:
-//     for (const item of order.items) {
-//       const productId = item.productId; // assuming productId is stored as an ObjectId or similar.
-//       const quantity = item.quantity;
-
-//       // Update branch inventory: Increase stockIn, decrease stockOut, and restore currentStock.
-//       const inventory = await BranchInventory.findOne({ productId });
-//       if (inventory) {
-//         inventory.stockIn = (inventory.stockIn || 0) + quantity;
-//         inventory.stockOut = (inventory.stockOut || 0) - quantity;
-//         inventory.currentStock = (inventory.currentStock || 0) + quantity;
-//         await inventory.save();
-//       } else {
-//         console.warn("No branch inventory record found for productId:", productId);
-//       }
-
-//       // Update the overall product stock.
-//       await Product.findByIdAndUpdate(productId, { $inc: { stock: quantity } });
-//     }
-
 //     return res.json({ message: 'Order canceled successfully.', order });
 //   } catch (error) {
 //     console.error('Error canceling order:', error);
@@ -179,41 +134,161 @@ router.patch('/orders/:orderId/cancel', async (req, res) => {
 // });
 
 
-router.patch('/orders/:orderId/update', async (req, res) => {
+router.patch('/orders/:orderId/cancel', async (req, res) => {
   try {
-    const { items } = req.body;
-    if (!items || !Array.isArray(items)) {
-      return res.status(400).json({
-        error: 'Invalid items format. "items" must be an array.'
-      });
-    }
-
     const order = await OrderOffline.findById(req.params.orderId);
     if (!order) {
       return res.status(404).json({ error: 'Order not found.' });
     }
 
-    // Overwrite items, recalculate totalAmount
-    order.items = items;
-    order.totalAmount = items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
+    // Check if the order is within the 24-hour cancellation window.
+    const timeDiff = Date.now() - new Date(order.createdAt).getTime();
+    if (timeDiff > ONE_DAY_MS) {
+      return res.status(400).json({ error: 'Cancellation window expired. Orders cannot be canceled after 24 hours.' });
+    }
+
+    // Update order status to "canceled" and update the updatedAt field.
+    order.orderStatus = 'canceled';
     order.updatedAt = Date.now();
     await order.save();
 
-    // **Populate** the product references after saving
-    await order.populate('items.productId');
+    // For each order item, reverse the inventory changes:
+    for (const item of order.items) {
+      const productId = item.productId; // assuming productId is stored as an ObjectId or similar.
+      const quantity = item.quantity;
 
-    return res.json({
-      message: 'Order updated successfully.',
-      order
-    });
+      // Update branch inventory: Increase stockIn, decrease stockOut, and restore currentStock.
+      const inventory = await BranchInventory.findOne({ productId });
+      if (inventory) {
+        inventory.stockIn = (inventory.stockIn || 0) + quantity;
+        inventory.stockOut = (inventory.stockOut || 0) - quantity;
+        inventory.currentStock = (inventory.currentStock || 0) + quantity;
+        await inventory.save();
+      } else {
+        console.warn("No branch inventory record found for productId:", productId);
+      }
+
+      // Update the overall product stock.
+      await Product.findByIdAndUpdate(productId, { $inc: { stock: quantity } });
+    }
+
+    return res.json({ message: 'Order canceled successfully.', order });
+  } catch (error) {
+    console.error('Error canceling order:', error);
+    return res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+
+// router.patch('/orders/:orderId/update', async (req, res) => {
+//   try {
+//     const { items } = req.body;
+//     if (!items || !Array.isArray(items)) {
+//       return res.status(400).json({
+//         error: 'Invalid items format. "items" must be an array.'
+//       });
+//     }
+
+//     const order = await OrderOffline.findById(req.params.orderId);
+//     if (!order) {
+//       return res.status(404).json({ error: 'Order not found.' });
+//     }
+
+//     // Overwrite items, recalculate totalAmount
+//     order.items = items;
+//     order.totalAmount = items.reduce(
+//       (sum, item) => sum + item.price * item.quantity,
+//       0
+//     );
+//     order.updatedAt = Date.now();
+//     await order.save();
+
+//     // **Populate** the product references after saving
+//     await order.populate('items.productId');
+
+//     return res.json({
+//       message: 'Order updated successfully.',
+//       order
+//     });
+//   } catch (error) {
+//     console.error('Error updating order:', error);
+//     return res.status(500).json({ error: 'Server error.' });
+//   }
+// });
+
+
+
+// Example: PATCH /orders/:orderId/update
+router.patch('/orders/:orderId/update', async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!items || !Array.isArray(items)) {
+      return res.status(400).json({ error: 'Invalid items format. "items" must be an array.' });
+    }
+
+    // Fetch the existing order, possibly populate items.productId if needed
+    const order = await OrderOffline.findById(req.params.orderId).populate('items.productId');
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found.' });
+    }
+
+    // Build a map of old items
+    // Key: productId (string), Value: old quantity
+    const oldItemsMap = new Map();
+    for (const oldItem of order.items) {
+      oldItemsMap.set(String(oldItem.productId._id), oldItem.quantity);
+    }
+
+    // Build a map of new items
+    // Key: productId (string), Value: new quantity
+    const newItemsMap = new Map();
+    for (const newItem of items) {
+      // If newItem.productId is just an ID, ensure it's a string
+      newItemsMap.set(String(newItem.productId), newItem.quantity);
+    }
+
+    // For each product in the old order, check if quantity was removed or reduced
+    for (const [prodId, oldQuantity] of oldItemsMap.entries()) {
+      const newQuantity = newItemsMap.get(prodId) || 0; 
+      const delta = newQuantity - oldQuantity;
+
+      if (delta < 0) {
+        // The quantity was reduced or the item was removed
+        const quantityRemoved = Math.abs(delta);
+
+        // 1) Update the BranchInventory record
+        const inventory = await BranchInventory.findOne({ productId: prodId });
+        if (inventory) {
+          inventory.stockIn = (inventory.stockIn || 0) + quantityRemoved;
+          inventory.stockOut = (inventory.stockOut || 0) - quantityRemoved;
+          inventory.currentStock = (inventory.currentStock || 0) + quantityRemoved;
+          await inventory.save();
+        } else {
+          console.warn("No branch inventory record found for productId:", prodId);
+        }
+
+        // 2) Update the Product stock
+        await Product.findByIdAndUpdate(prodId, { $inc: { stock: quantityRemoved } });
+      }
+    }
+
+    // Overwrite the order items with the new array
+    order.items = items;
+
+    // Optionally, recalculate the totalAmount if you store price in each item
+    order.totalAmount = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    order.updatedAt = Date.now();
+
+    // Save the updated order
+    await order.save();
+
+    return res.json({ message: 'Order updated successfully.', order });
   } catch (error) {
     console.error('Error updating order:', error);
     return res.status(500).json({ error: 'Server error.' });
   }
 });
+
 
 
 router.delete('/orders/:orderId', async (req, res) => {
