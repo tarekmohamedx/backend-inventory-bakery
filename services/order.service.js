@@ -29,6 +29,7 @@ const orderservice = {
               );
             }
       const orderpayload = {
+        // orderName: `Order-${Date.now()}`,
         items: orderData.items,
         customerId: orderData.customerId,
         totalAmount: orderData.totalAmount,
@@ -65,6 +66,18 @@ throw new Error(error.message);
 return await orderRepository.getorderbyid(orderid);
   },
 
+// getOrderHistory
+  getOrderHistory: async (customerId) => {
+    try {
+      const order =await orderRepository.getOrdersByCustomerId(customerId);
+      return order;
+    } catch (error) {
+      console.error('Error fetching order history:', error.message);
+      throw new Error('Error retrieving order history');
+    }
+  }
+
+  ,
   getOrdersBySeller : async (sellerId) => {
     try {
       const orders = await orderRepository.getOrderBySeller(sellerId);

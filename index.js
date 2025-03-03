@@ -79,6 +79,11 @@ app.use('/api/comments',commentController);
 app.use('/api/users', userProfileRoutes);
 
 
+
+const orderRoutes = require('./controllers/order.controller.js');
+app.use('/api', orderRoutes);
+app.use('/api/order', orderRoutes);
+
 // controller registrations
 const controllersDirPath = path.join(__dirname, "controllers");
 const controllersDirectory = fs.readdirSync(controllersDirPath);

@@ -64,7 +64,7 @@ const productSchema = new mongoose.Schema({
     branch: {
         type: [String]
     },
-});
+}); 
 
 const product = mongoose.model('Product', productSchema);
 module.exports = product;

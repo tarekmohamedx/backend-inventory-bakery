@@ -18,6 +18,9 @@ const customerNameSchema = new mongoose.Schema({
 });
 
 const orderSchema = new mongoose.Schema({
+
+
+  
   items: [
     {
       productId: {

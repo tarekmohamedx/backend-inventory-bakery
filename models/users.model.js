@@ -85,7 +85,7 @@ const userSchema = new mongoose.Schema({
 
 
 // Update the `updatedAt` field whenever the document is saved (before saving the doc)
-userSchema.pre('save', function(next) {
+userSchema.pre('save',  function(next) {
   this.updatedAt = Date.now();
   next();
 });
