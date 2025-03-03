@@ -6,6 +6,8 @@ const fs = require("fs");
 const path = require("path");
 const cartRouter = require('./routes/cart.route');
 const session = require("express-session");
+const sendMail = require('./services/mail.service.js');
+
 
 const cartController = require('./controllers/cart.controller')
 const adminController = require('./controllers/admin.controller')
@@ -71,7 +73,6 @@ app.use('/api/cart', cartController);
 app.use('/api/admin', adminController);
 app.use('/api/seller', sellerRouter); 
 app.use('/api/inventory', InventoryController);
-
 
 const userProfileRoutes = require('./routes/UserProfile1.route.js');
 const commentController = require("./controllers/comment.controller.js");

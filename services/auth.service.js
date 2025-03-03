@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const mailService = require('./mail.service')
 
 const {signToken} = require('../utils/jwttoken.maneger');
 
@@ -12,6 +13,18 @@ const registerUser = async (userbody) => {
 
     // Generate a JWT token using the returned claim
     const token = signToken({ claims });
+
+    //send email
+    const subject = "New member at Bakery";
+    const message = `<div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #fff8e1; color: #5d4037;">
+    <h2 style="color: #d84315;">Welcome to Bakery! 🎉</h2>
+    <p>Hi ${userbody.first_name},</p>
+    <p>We're thrilled to have you join our bakery family! 🍪🥐🍰</p>
+    <p>Get ready to enjoy freshly baked treats, exclusive deals, and a delightful experience with every order.</p>
+    <p>Need help? Our friendly team is here for you anytime!</p>
+  </div>`;
+
+    await mailService.sendMail(claims.email, subject, message)
 
     // Return the token
     return { token };

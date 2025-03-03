@@ -281,6 +281,7 @@ module.exports.transferToBranch = async (requestId) => {
 
     if (request.quantity > foundProduct.stockIn) {
       request.Status = 'pending';
+      request.responseMessage = 'No enough stock in Inventory for this product';
       await request.save();
       return { status: 400, message: "Not enough stock in Inventory for this product" };
 
