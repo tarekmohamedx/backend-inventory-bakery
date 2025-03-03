@@ -5,11 +5,148 @@ const productRepo = require('../repos/product.repo')
 const mongoose = require("mongoose");
 const OrderOffline = require('../models/OrderOffline.model');
 
+// module.exports.GetInventoryDatafinal = async () => {
+//   try {
+//     const inventoryDocs = await Inventory.find().populate({
+//       path: "products.productId",
+//       model: "Product",
+//       strictPopulate: false,
+//     });
+
+//     if (!inventoryDocs || inventoryDocs.length === 0) {
+//       return [];
+//     }
+
+//     // Flatten the inventory documents to extract product info
+//     const products = inventoryDocs.flatMap((inv) =>
+//       inv.products
+//         .filter((p) => p.productId) // Ensure product exists
+//         .map((p) => ({
+//           productId: p.productId._id,
+//           name: p.productId.name,
+//           description: p.productId.description,
+//           // Use inventory price if available; otherwise, fallback to product price
+//           price: p.price || p.productId.price,
+//           stockIn: p.stockIn,
+//           stockOut: p.stockOut,
+//           currentStock: p.stockIn - p.stockOut,
+//         }))
+//     );
+
+//     return products;
+//   } catch (error) {
+//     console.error("Error retrieving products:", error);
+//     throw new Error("Failed to fetch products");
+//   }
+// };
+
+// reading from main inventory 
+module.exports.GetInventoryDatafinal = async () => {
+  try {
+    const inventoryDocs = await Inventory.find().populate({
+      path: "products.productId",
+      model: "Product",
+      strictPopulate: false,
+    });
+
+    if (!inventoryDocs || inventoryDocs.length === 0) {
+      console.log('data eq = : ' + data);
+      return { message: "No inventory data found", data: [] };
+    }
+
+    // Instead of flattening or mapping to a custom object,
+    // we return the products arrays as they exist in the inventory documents.
+    // Option 1: Return as an array of arrays:
+    // const productsData = inventoryDocs.map(inv => inv.products);
+
+    // Option 2: Flatten them into a single array:
+    const productsData = inventoryDocs.flatMap(inv => inv.products);
+
+    return { message: "Products retrieved successfully", data: productsData };
+  } catch (error) {
+    console.error("Error retrieving products:", error);
+    throw new Error("Failed to fetch products");
+  }
+};
+
+
+
+// reading from product schema 
+// module.exports.GetInventoryData = async () => {
+//   try {
+//     // Populate products in inventory
+//     const inventory = await Inventory.find().populate({
+//       path: "products.productId",
+//       select: "name price flavor createdAt", // Selecting specific fields from Product
+//       strictPopulate: false,
+//     });
+
+//     // Map inventory data to return the required format
+//     const inventoryData = inventory.flatMap((inv) =>
+//       inv.products.map((p) => ({
+//         _id: p.productId._id,
+//         name: p.productId.name,
+//         price: p.productId.price,
+//         flavor: p.productId.flavor,
+//         createdAt: p.productId.createdAt,
+//         stockIn: p.stockIn, // From Inventory
+//         stockOut: p.stockOut, // From Inventory
+//       }))
+//     );
+
+//     return inventoryData;
+//   } catch (error) {
+//     console.error("Error fetching inventory data:", error);
+//     throw error;
+//   }
+// };
+
+module.exports.GetInventoryData = async () => {
+  try {
+    // Populate products and category name
+    const inventory = await Inventory.find().populate({
+      path: "products.productId",
+      select:
+        "name price flavor createdAt description images categoryid sellerId status",
+      populate: {
+        path: "categoryid", // Populating category data
+        select: "name", // Selecting only category name
+      },
+      strictPopulate: false,
+    });
+
+    // Map inventory data to return the required format
+    const inventoryData = inventory.flatMap((inv) =>
+      inv.products.map((p) => ({
+        _id: p.productId._id, // Product ID
+        name: p.productId.name, // Product Name
+        price: p.productId.price, // Product Price
+        flavor: p.productId.flavor, // Product Flavor
+        createdAt: p.productId.createdAt, // Created At
+        description: p.productId.description, // Product Description
+        images: p.productId.images, // Product Images
+        categoryid: p.productId.categoryid?._id, // Category ID
+        categoryName: p.productId.categoryid?.name, // Category Name (Newly Added)
+        sellerId: p.productId.sellerId, // Seller ID
+        status: p.productId.status, // Product Status
+        stockIn: p.stockIn, // Inventory Stock In
+        stockOut: p.stockOut, // Inventory Stock Out
+      }))
+    );
+
+    return inventoryData;
+  } catch (error) {
+    console.error("Error fetching inventory data:", error);
+    throw error;
+  }
+};
+
 
 
 // module.exports.GetInventoryData = async()=>{
 //     const inventory = await Inventory.find().populate({
 //       path: "products.productId",
+//       select: "name price flavor createdAt", // Selecting specific fields from Product
 //       strictPopulate: false,
 //     });
 
@@ -24,41 +161,9 @@ const OrderOffline = require('../models/OrderOffline.model');
 
 // }
 
-
-
 // module.exports.getBranchStock = async(branchId)=>{
 //   return await Branch.BranchInventory.find({branchId}, {_id:0, branchId:0, cashier:0, clerk:0}).populate('productId');
 // }
-module.exports.GetInventoryData = async () => {
-  try {
-    // Populate products in inventory
-    const inventory = await Inventory.find().populate({
-      path: "products.productId",
-      select: "name price flavor createdAt", // Selecting specific fields from Product
-      strictPopulate: false,
-    });
-
-    // Map inventory data to return the required format
-    const inventoryData = inventory.flatMap((inv) =>
-      inv.products.map((p) => ({
-        id: p.productId._id,
-        name: p.productId.name,
-        price: p.productId.price,
-        flavor: p.productId.flavor,
-        createdAt: p.productId.createdAt,
-        stockIn: p.stockIn, // From Inventory
-        stockOut: p.stockOut, // From Inventory
-      }))
-    );
-
-    return inventoryData;
-  } catch (error) {
-    console.error("Error fetching inventory data:", error);
-    throw error;
-  }
-};
-
-
 
 module.exports.getBranchStock = async (branchId) => {
   try {

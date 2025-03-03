@@ -1,11 +1,16 @@
 const productService = require("../services/product.service");
 const Product = require("../models/Product.model");
+const userRepo = require('../repos/users.repo');
 const express = require("express");
+const httpStatusText = require("../utils/httpStatusText");
+const Inventory = require('../models/inventory.model');
+const User = require('../models/users.model');
+const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const ImageKit = require("imagekit");
 const Branch = require('../models/branchinventory.model').Branch;
 const BranchInventory = require('../models/branchinventory.model').BranchInventory;
 const OrderOffline = require('../models/OrderOffline.model');
-const mongoose = require('mongoose');
 const verifyToken = require("../middlewere/authentication.middlewere");
 const InventoryService = require('../services/inventory.service');
 
@@ -71,87 +76,91 @@ module.exports = (() => {
     }
   });
 
-   // Create product
-   router.post("/products", verifyToken ,async (req, res) => {
-    try {
-      const user = req.user;
-      console.log("req,user", user);
-      if (user.role !== 'Seller' && user.role !== 'Admin') {
-        return res.status(403).json({ message: 'You do not have permission to add a product' });
-      }
-      console.log("Request Body:", req.body);
-      console.log("Uploaded Files:", req.files);
-
-      // Convert values to correct types
-      const parsedPrice = parseFloat(req.body.price);
-      const parsedStock = parseInt(req.body.stock, 10);
-      const parsedPreviousPrice = req.body.previousprice ? parseFloat(req.body.previousprice) : undefined;
-      const parsedSales = req.body.sales ? parseInt(req.body.sales, 10) : 0;
-      const parsedDiscounted = req.body.discounted === "true"; // Convert "true" string to boolean
-
-      // Validate required fields (categoryid removed)
-      if (isNaN(parsedPrice) || isNaN(parsedStock)) {
-        return res.status(400).json({
-          error: "Missing or invalid required fields: `price`, `stock`",
-        });
-      }
-
-      // Check if images are provided
-      if (!req.files || Object.keys(req.files).length === 0) {
-        return res.status(400).json({ error: "At least one image file is required" });
-      }
-
-      // Ensure `req.files.images` is an array
-      // const uploadedFiles = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
-      const uploadedFiles = req.files?.images? (Array.isArray(req.files.images) ? req.files.images : [req.files.images]): [];
-
-
-  //     // Upload images to ImageKit
-  //     const uploadedImages = await Promise.all(
-  //       uploadedFiles.map(async (file) => {
-  //         try {
-  //           const uploaded = await imagekit.upload({
-  //             file: file.data,
-  //             fileName: file.name,
-  //             folder: "/products",
-  //           });
-  //           return uploaded.url;
-  //         } catch (uploadError) {
-  //           console.error("Error uploading image:", uploadError);
-  //           throw new Error("Image upload failed");
-  //         }
-  //       })
-  //     );
-
-  //     console.log("ImageKit Upload URLs:", uploadedImages);
-
-      // Create new product without categoryid
-      const newProduct = await Product.create({
-        name: req.body.name,
-        description: req.body.description,
-        price: parsedPrice,
-        previousprice: parsedPreviousPrice,
-        sales: parsedSales,
-        stock: parsedStock,
-        flavor: req.body.flavor,
-        discounted: parsedDiscounted,
-        images: uploadedImages, // Images uploaded successfully
-        categoryid: req.body.categoryid,
-        sellerId: user.userId,
-        accentColor: req.body.accentColor || '#0B374D',
-        status: req.body.status || 'Pending',
-        
-      });
-
-      return res.status(201).json(newProduct);
-    } catch (error) {
-      console.error("Error processing product creation:", error);
-      return res.status(500).json({ error: error.message || "Internal Server Error" });
+///create
+router.post("/products", verifyToken, async (req, res) => {
+  try {
+    const user = req.user;
+    console.log("req,user", user);
+    if (user.role !== "Seller" && user.role !== "Admin") {
+      return res
+        .status(403)
+        .json({ message: "You do not have permission to add a product" });
     }
-  });
-  
+    console.log("Request Body:", req.body);
+    console.log("Uploaded Files:", req.files);
 
+    // Convert values to correct types
+    const parsedPrice = parseFloat(req.body.price);
+    const parsedStock = parseInt(req.body.stock, 10);
+    const parsedPreviousPrice = req.body.previousprice
+      ? parseFloat(req.body.previousprice)
+      : undefined;
+    const parsedSales = req.body.sales ? parseInt(req.body.sales, 10) : 0;
+    const parsedDiscounted = req.body.discounted === "true";
 
+    // Validate required fields (categoryid removed)
+    if (isNaN(parsedPrice) || isNaN(parsedStock)) {
+      return res.status(400).json({
+        error: "Missing or invalid required fields: price, stock",
+      });
+    }
+
+    // Check if images are provided
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res
+        .status(400)
+        .json({ error: "At least one image file is required" });
+    }
+
+    const uploadedFiles = req.files?.images
+      ? Array.isArray(req.files.images)
+        ? req.files.images
+        : [req.files.images]
+      : [];
+
+    // Upload images to ImageKit
+    const uploadedImages = await Promise.all(
+      uploadedFiles.map(async (file) => {
+        try {
+          const uploaded = await imagekit.upload({
+            file: file.data,
+            fileName: file.name,
+            folder: "/products",
+          });
+          return uploaded.url;
+        } catch (uploadError) {
+          console.error("Error uploading image:", uploadError);
+          throw new Error("Image upload failed");
+        }
+      })
+    );
+
+    console.log("ImageKit Upload URLs:", uploadedImages);
+
+    const newProduct = await Product.create({
+      name: req.body.name,
+      description: req.body.description,
+      price: parsedPrice,
+      previousprice: parsedPreviousPrice,
+      sales: parsedSales,
+      stock: parsedStock,
+      flavor: req.body.flavor,
+      discounted: parsedDiscounted,
+      images: uploadedImages, 
+      categoryid: req.body.categoryid,
+      sellerId: user.userId,
+      accentColor: req.body.accentColor || "#0B374D",
+      status: req.body.status || "Pending",
+    });
+
+    return res.status(201).json(newProduct);
+  } catch (error) {
+    console.error("Error processing product creation:", error);
+    return res
+      .status(500)
+      .json({ error: error.message || "Internal Server Error" });
+  }
+});
 
   // update products
   router.put("/products/:id", async (req, res, next) => {
@@ -196,7 +205,6 @@ module.exports = (() => {
       const products = await productService.findByCategory(category);
       const filteredProducts = products.filter(p =>p.status === 'Approved');
       console.log("filteredProducts: ", filteredProducts);
-      // console.log("filteredProductsbyBranch: ", filteredProducts.filter(p=>p.branch.includes('MainBranch')));
       res.status(200).json(filteredProducts);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -205,7 +213,7 @@ module.exports = (() => {
   });
 
 
-  // Route to get products by sellerId
+  // get products by sellerId
 router.get("/products/seller/:sellerId", async (req, res) => {
   try {
     const sellerId = req.params.sellerId;
@@ -225,21 +233,15 @@ router.get("/products/seller/:sellerId", async (req, res) => {
 //  Change product status by ID to admin 
 router.patch("/product/changeproductstatus/:id", async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body; // Expecting status in request body
+  const { status } = req.body;
 
   try {
-    // const validStatuses = ["Pending", "Approved", "Rejected", "Out of Stock"];
-    // if (!validStatuses.includes(productstatus)) {
-    //   return res.status(400).json({ error: "Invalid product status" });
-    // }
-
-// u can approved rejected product - pending product 
 
     const product = await productService.getProductById(id);
 
 
     if(product.status === "Approved"){
-return res.status(400).json({error: "Product already approved"}); 
+    return res.status(400).json({error: "Product already approved"}); 
     }
     
    
@@ -316,10 +318,6 @@ router.post('/check-branch-capacity', async (req, res) => {
 
 
 
-
-
-
-
 // In your branch-inventory routes file
 router.get('/branch-inventory', verifyToken, async (req, res) => {
   try {
@@ -367,24 +365,6 @@ router.get('/seller/pendingProducts/:sellerId', async (req, res) => {
 });
 
 //---------------------------------------------------------------------------------------------------------------
-// Example endpoint: GET /api/cashier/:cashierId/products
-// router.get('/cashier/:cashierId/products', async (req, res) => {
-//   try {
-//     const cashierId = req.params.cashierId;
-//     // Find the branch where the cashier works
-//     const branch = await Branch.findOne({ cashiers: cashierId });
-//     if (!branch) {
-//       return res.status(404).json({ error: 'Branch not found for this cashier.' });
-//     }
-//     // Find the inventory for that branch and populate product details
-//     const products = await BranchInventory.find({ branchId: branch._id }).populate('productId');
-//     console.log("products", products);
-//     return res.json({ products });
-//   } catch (error) {
-//     console.error('Error fetching branch products:', error);
-//     return res.status(500).json({ error: 'Server error.' });
-//   }
-// });
 
 router.get('/cashier/:cashierId/products', async (req, res) => {
   try {
@@ -445,8 +425,6 @@ router.get('/cashier/:cashierId/products', async (req, res) => {
 
 
 
-
-
 // Example endpoint: GET /api/cashier/:cashierId/orders
 router.get('/cashier/:cashierId/orders', async (req, res) => {
   try {
@@ -461,29 +439,309 @@ router.get('/cashier/:cashierId/orders', async (req, res) => {
   }
 });
 
-router.get('/inventory/:productId', async (req, res) => {
+// ---------------------------------- home cart -------------
+router.post("/homecart/add", verifyToken, async (req, res) => {
   try {
-    const { productId } = req.params;
-    
-    // Validate productId format
+    const { productId, quantity, price } = req.body;
+    const userId = req.user.userId;
+
     if (!mongoose.Types.ObjectId.isValid(productId)) {
-      return res.status(400).json({ error: 'Invalid product id format' });
-    }
-    const inventory = await BranchInventory.findOne({ productId }).lean();
-    
-    if (!inventory) {
-      return res.status(404).json({ error: 'Inventory record not found for this product' });
+      return res.status(400).json({ 
+        status: httpStatusText.FAIL, 
+        message: "Invalid productId format" 
+      });
     }
 
-    console.log("inventory", inventory);
-    
-    return res.status(200).json(inventory);
+    if (quantity <= 0) {
+      return res.status(400).json({ 
+        status: httpStatusText.FAIL, 
+        message: "Quantity must be greater than zero" 
+      });
+    }
+
+    // Check if the product exists
+    const product = await Product.findById(productId).lean();
+    if (!product) {
+      return res.status(404).json({ 
+        status: httpStatusText.FAIL, 
+        message: "Product not found" 
+      });
+    }
+
+    // Check overall product stock
+    if (product.stock < quantity) {
+      return res.status(400).json({ 
+        status: httpStatusText.FAIL, 
+        message: "Insufficient product stock" 
+      });
+    }
+
+    // Get the user
+    let user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        status: httpStatusText.FAIL, 
+        message: "User not found" 
+      });
+    }
+
+    // Update user's cart
+    const existingItem = user.cartItems.find(item => item.productId.equals(productId));
+    if (existingItem) {
+      existingItem.quantity += quantity;
+    } else {
+      user.cartItems.push({ productId, quantity, price });
+    }
+    await user.save();
+
+    // Update inventory using the new inventory schema:
+    // Find the inventory document that contains this product in its "products" array.
+    const inventory = await Inventory.findOne({ "products.productId": productId });
+    if (inventory) {
+      // Locate the subdocument for this product.
+      const prodSubdoc = inventory.products.find(prod => prod.productId.equals(productId));
+      if (prodSubdoc) {
+        // Increase stockOut by the added quantity.
+        prodSubdoc.stockOut = (prodSubdoc.stockOut || 0) + quantity;
+        prodSubdoc.stockIn = (prodSubdoc.stockIn || 0) - quantity;
+        // Note: The available stock in the inventory is computed as stockIn - stockOut.
+        await inventory.save();
+      } else {
+        console.warn("No product subdocument found in inventory for productId:", productId);
+      }
+    } else {
+      console.warn("No inventory record found for productId:", productId);
+    }
+
+    // Decrease the overall product stock by the quantity added.
+    await Product.findByIdAndUpdate(productId, { $inc: { stock: -quantity } });
+
+    // Update JWT with the new cart data, if needed.
+    const token = jwt.sign(
+      { userId: user._id, cartItems: user.cartItems },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.status(200).json({ 
+      status: httpStatusText.SUCCESS, 
+      cartItems: user.cartItems, 
+      token 
+    });
   } catch (error) {
-    console.error("Error fetching inventory:", error);
-    return res.status(500).json({ error: 'Server error' });
+    console.error("Error updating cart:", error);
+    res.status(500).json({ 
+      status: httpStatusText.ERROR, 
+      message: "Server error" 
+    });
   }
 });
 
+
+router.put('/homeupdate/:id', async (req, res) => {
+  try {
+    const itemId = req.params.id; // The product ID in the cart item
+    const { userId, quantity } = req.body;
+
+    if (quantity <= 0) {
+      return res.status(400).json({
+        status: httpStatusText.FAIL,
+        message: "Quantity must be greater than zero",
+      });
+    }
+
+    // Find the user and the specific cart item
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: httpStatusText.FAIL,
+        message: "User not found",
+      });
+    }
+
+    const cartItem = user.cartItems.find(item => item.productId.equals(itemId));
+    if (!cartItem) {
+      return res.status(404).json({
+        status: httpStatusText.FAIL,
+        message: "Cart item not found",
+      });
+    }
+
+    // Calculate the change in quantity (delta)
+    const oldQuantity = cartItem.quantity;
+    const delta = quantity - oldQuantity;
+
+    // Check product stock if increasing quantity
+    const product = await Product.findById(itemId);
+    if (!product) {
+      return res.status(404).json({
+        status: httpStatusText.FAIL,
+        message: "Product not found",
+      });
+    }
+    if (delta > 0 && product.stock < delta) {
+      return res.status(400).json({
+        status: httpStatusText.FAIL,
+        message: "Insufficient product stock",
+      });
+    }
+    cartItem.quantity = quantity;
+    await user.save();
+    const inventory = await Inventory.findOne({ "products.productId": itemId });
+    if (inventory) {
+      // Find the subdocument for this product
+      const prodSubdoc = inventory.products.find(p => p.productId.equals(itemId));
+      if (prodSubdoc) {
+        prodSubdoc.stockOut = (prodSubdoc.stockOut || 0) + delta;
+        prodSubdoc.stockIn = (prodSubdoc.stockIn || 0) - delta;
+        // Note: Current available stock can be computed as (stockIn - stockOut).
+        await inventory.save();
+      } else {
+        console.warn("No inventory subdocument found for productId:", itemId);
+      }
+    } else {
+      console.warn("No inventory record found for productId:", itemId);
+    }
+    await Product.findByIdAndUpdate(itemId, { $inc: { stock: -delta } });
+
+    // Optionally, update the JWT with the new cart data.
+    const token = jwt.sign(
+      { userId: user._id, cartItems: user.cartItems },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    return res.status(200).json({
+      status: httpStatusText.SUCCESS,
+      data: user.cartItems,
+      token,
+    });
+  } catch (err) {
+    console.error("Error updating cart:", err);
+    return res.status(err.statusCode || 500).json({
+      status: httpStatusText.ERROR,
+      message: err.message,
+    });
+  }
+});
+
+
+
+router.delete('/homeitems/:id', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const userId = req.query.userId;
+    
+    // Get the user (or guest cart if user not found)
+    const user = await userRepo.getUserById(userId);
+    if (!user) {
+      // For guests, remove from guest cart.
+      const updatedCart = await cartService.removeFromGuestCart(productId);
+      return res.status(200).json({ status: httpStatusText.SUCCESS, data: updatedCart });
+    }
+    
+    // Find the index of the cart item that matches the productId
+    const itemIndex = user.cartItems.findIndex(item => item.productId == productId);
+    if (itemIndex === -1) {
+      return res.status(400).json({ status: httpStatusText.FAIL, message: "Item does not exist" });
+    }
+    
+    // Get the quantity of the item to be removed
+    const removedItem = user.cartItems[itemIndex];
+    const quantity = removedItem.quantity;
+    
+    // Remove the item from the user's cart
+    user.cartItems.splice(itemIndex, 1);
+    await user.save();
+    const inventory = await Inventory.findOne({ "products.productId": productId });
+    if (inventory) {
+      // Locate the subdocument for this product
+      const productSubdoc = inventory.products.find(subDoc =>
+        subDoc.productId.equals(productId)
+      );
+      
+      if (productSubdoc) {
+        productSubdoc.stockOut = (productSubdoc.stockOut || 0) - quantity;
+        productSubdoc.stockIn = (productSubdoc.stockIn || 0) + quantity;
+      } else {
+        console.warn("No subdocument found for productId:", productId);
+      }
+      
+      await inventory.save();
+    } else {
+      console.warn("No inventory document found containing productId:", productId);
+    }
+    await Product.findByIdAndUpdate(productId, { $inc: { stock: quantity } });
+    
+    return res.status(200).json({ status: httpStatusText.SUCCESS, data: user.cartItems });
+  } catch (err) {
+    console.error("Error removing cart item:", err);
+    return res.status(400).json({
+      status: httpStatusText.ERROR,
+      message: err.message
+    });
+  }
+});
+
+
+router.delete("/homeclear/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
+  
+    // Find the user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        status: httpStatusText.FAIL, 
+        message: "User not found" 
+      });
+    }
+  
+    // Iterate over each cart item to reverse inventory and product stock changes
+    for (const cartItem of user.cartItems) {
+      const { productId, quantity } = cartItem;
+  
+      // Find the Inventory document that contains this product
+      const inventory = await Inventory.findOne({ "products.productId": productId });
+      if (inventory) {
+        // Find the subdocument for this product
+        const prodSubdoc = inventory.products.find(p => p.productId.equals(productId));
+        if (prodSubdoc) {
+          // Reverse the effect of the previous "sale"
+          // Assuming that when the item was added, stockOut was increased,
+          // now we decrease stockOut by the removed quantity.
+          prodSubdoc.stockOut = (prodSubdoc.stockOut || 0) - quantity;
+          prodSubdoc.stockIn = (prodSubdoc.stockIn || 0) + quantity;
+          // Available stock is computed as (stockIn - stockOut)
+        } else {
+          console.warn("No inventory subdocument found for productId:", productId);
+        }
+        await inventory.save();
+      } else {
+        console.warn("No inventory record found for productId:", productId);
+      }
+  
+      // Update the overall product stock: increase stock by the removed quantity
+      await Product.findByIdAndUpdate(productId, { $inc: { stock: quantity } });
+    }
+  
+    // Clear the user's cart items
+    user.cartItems = [];
+    await user.save();
+  
+    return res.status(200).json({
+      status: httpStatusText.SUCCESS,
+      data: user.cartItems, // Should be empty now
+    });
+  
+  } catch (err) {
+    console.error("Error clearing cart:", err);
+    return res.status(err.statusCode || 500).json({
+      status: httpStatusText.ERROR,
+      message: err.message,
+    });
+  }
+});
 
 
   return router;
