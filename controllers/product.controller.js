@@ -353,7 +353,6 @@ router.get('/seller/totalProducts/:sellerId', async (req, res) => {
   }
 });
 
-// pendingProducts card in seller dashboard
 router.get('/seller/pendingProducts/:sellerId', async (req, res) => {
   try {
     const sellerId = req.params.sellerId;
@@ -369,16 +368,11 @@ router.get('/seller/pendingProducts/:sellerId', async (req, res) => {
 router.get('/cashier/:cashierId/products', async (req, res) => {
   try {
     const cashierId = req.params.cashierId;
-    const category = req.query.category; // e.g. "cookies"
-
-    // 1. Find the branch where the cashier works.
+    const category = req.query.category;
     const branch = await Branch.findOne({ cashiers: cashierId });
     if (!branch) {
       return res.status(404).json({ error: 'Branch not found for this cashier.' });
     }
-
-    // 2. Find the inventory for that branch and populate product details,
-    // including the category info from the 'categoryid' field.
     let inventoryItems = await BranchInventory.find({ branchId: branch._id })
       .populate({
         path: 'productId',
@@ -386,8 +380,6 @@ router.get('/cashier/:cashierId/products', async (req, res) => {
       });
 
     console.log("Raw Inventory Items:", inventoryItems);
-
-    // Log each product's category for debugging.
     inventoryItems.forEach(item => {
       const prodName = item.productId ? item.productId.name : "No product";
       const catName = item.productId && item.productId.categoryid 
@@ -395,8 +387,6 @@ router.get('/cashier/:cashierId/products', async (req, res) => {
                       : "Not populated";
       console.log(`Product: ${prodName}, Category: ${catName}`);
     });
-
-    // 3. If a category is provided, filter inventory items based on the populated category name.
     if (category) {
       console.log("Filtering by category:", category);
       inventoryItems = inventoryItems.filter(item => {
@@ -411,8 +401,6 @@ router.get('/cashier/:cashierId/products', async (req, res) => {
         return match;
       });
     }
-
-    // 4. Filter to include only products with status "Approved"
     inventoryItems = inventoryItems.filter(item => item.productId && item.productId.status === 'Approved');
 
     console.log("Filtered Inventory Items:", inventoryItems);
@@ -425,11 +413,9 @@ router.get('/cashier/:cashierId/products', async (req, res) => {
 
 
 
-// Example endpoint: GET /api/cashier/:cashierId/orders
 router.get('/cashier/:cashierId/orders', async (req, res) => {
   try {
     const cashierId = req.params.cashierId;
-    // Find orders where the cashier field equals the logged-in cashier's id
     const orders = await OrderOffline.find({ cashier: cashierId }).populate('items.productId');;
     console.log("ordeeer", orders);
     return res.json({ orders });
@@ -458,8 +444,6 @@ router.post("/homecart/add", verifyToken, async (req, res) => {
         message: "Quantity must be greater than zero" 
       });
     }
-
-    // Check if the product exists
     const product = await Product.findById(productId).lean();
     if (!product) {
       return res.status(404).json({ 
@@ -467,16 +451,12 @@ router.post("/homecart/add", verifyToken, async (req, res) => {
         message: "Product not found" 
       });
     }
-
-    // Check overall product stock
     if (product.stock < quantity) {
       return res.status(400).json({ 
         status: httpStatusText.FAIL, 
         message: "Insufficient product stock" 
       });
     }
-
-    // Get the user
     let user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ 
@@ -484,8 +464,6 @@ router.post("/homecart/add", verifyToken, async (req, res) => {
         message: "User not found" 
       });
     }
-
-    // Update user's cart
     const existingItem = user.cartItems.find(item => item.productId.equals(productId));
     if (existingItem) {
       existingItem.quantity += quantity;
@@ -493,18 +471,12 @@ router.post("/homecart/add", verifyToken, async (req, res) => {
       user.cartItems.push({ productId, quantity, price });
     }
     await user.save();
-
-    // Update inventory using the new inventory schema:
-    // Find the inventory document that contains this product in its "products" array.
     const inventory = await Inventory.findOne({ "products.productId": productId });
     if (inventory) {
-      // Locate the subdocument for this product.
       const prodSubdoc = inventory.products.find(prod => prod.productId.equals(productId));
       if (prodSubdoc) {
-        // Increase stockOut by the added quantity.
         prodSubdoc.stockOut = (prodSubdoc.stockOut || 0) + quantity;
         prodSubdoc.stockIn = (prodSubdoc.stockIn || 0) - quantity;
-        // Note: The available stock in the inventory is computed as stockIn - stockOut.
         await inventory.save();
       } else {
         console.warn("No product subdocument found in inventory for productId:", productId);
@@ -512,11 +484,7 @@ router.post("/homecart/add", verifyToken, async (req, res) => {
     } else {
       console.warn("No inventory record found for productId:", productId);
     }
-
-    // Decrease the overall product stock by the quantity added.
     await Product.findByIdAndUpdate(productId, { $inc: { stock: -quantity } });
-
-    // Update JWT with the new cart data, if needed.
     const token = jwt.sign(
       { userId: user._id, cartItems: user.cartItems },
       process.env.JWT_SECRET,
@@ -540,7 +508,7 @@ router.post("/homecart/add", verifyToken, async (req, res) => {
 
 router.put('/homeupdate/:id', async (req, res) => {
   try {
-    const itemId = req.params.id; // The product ID in the cart item
+    const itemId = req.params.id;
     const { userId, quantity } = req.body;
 
     if (quantity <= 0) {
@@ -549,8 +517,6 @@ router.put('/homeupdate/:id', async (req, res) => {
         message: "Quantity must be greater than zero",
       });
     }
-
-    // Find the user and the specific cart item
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
@@ -566,12 +532,8 @@ router.put('/homeupdate/:id', async (req, res) => {
         message: "Cart item not found",
       });
     }
-
-    // Calculate the change in quantity (delta)
     const oldQuantity = cartItem.quantity;
     const delta = quantity - oldQuantity;
-
-    // Check product stock if increasing quantity
     const product = await Product.findById(itemId);
     if (!product) {
       return res.status(404).json({
@@ -589,12 +551,10 @@ router.put('/homeupdate/:id', async (req, res) => {
     await user.save();
     const inventory = await Inventory.findOne({ "products.productId": itemId });
     if (inventory) {
-      // Find the subdocument for this product
       const prodSubdoc = inventory.products.find(p => p.productId.equals(itemId));
       if (prodSubdoc) {
         prodSubdoc.stockOut = (prodSubdoc.stockOut || 0) + delta;
         prodSubdoc.stockIn = (prodSubdoc.stockIn || 0) - delta;
-        // Note: Current available stock can be computed as (stockIn - stockOut).
         await inventory.save();
       } else {
         console.warn("No inventory subdocument found for productId:", itemId);
@@ -604,7 +564,6 @@ router.put('/homeupdate/:id', async (req, res) => {
     }
     await Product.findByIdAndUpdate(itemId, { $inc: { stock: -delta } });
 
-    // Optionally, update the JWT with the new cart data.
     const token = jwt.sign(
       { userId: user._id, cartItems: user.cartItems },
       process.env.JWT_SECRET,
@@ -632,30 +591,24 @@ router.delete('/homeitems/:id', async (req, res) => {
     const productId = req.params.id;
     const userId = req.query.userId;
     
-    // Get the user (or guest cart if user not found)
     const user = await userRepo.getUserById(userId);
     if (!user) {
-      // For guests, remove from guest cart.
       const updatedCart = await cartService.removeFromGuestCart(productId);
       return res.status(200).json({ status: httpStatusText.SUCCESS, data: updatedCart });
     }
     
-    // Find the index of the cart item that matches the productId
     const itemIndex = user.cartItems.findIndex(item => item.productId == productId);
     if (itemIndex === -1) {
       return res.status(400).json({ status: httpStatusText.FAIL, message: "Item does not exist" });
     }
     
-    // Get the quantity of the item to be removed
     const removedItem = user.cartItems[itemIndex];
     const quantity = removedItem.quantity;
     
-    // Remove the item from the user's cart
     user.cartItems.splice(itemIndex, 1);
     await user.save();
     const inventory = await Inventory.findOne({ "products.productId": productId });
     if (inventory) {
-      // Locate the subdocument for this product
       const productSubdoc = inventory.products.find(subDoc =>
         subDoc.productId.equals(productId)
       );
@@ -687,6 +640,52 @@ router.delete('/homeitems/:id', async (req, res) => {
 router.delete("/homeclear/:id", async (req, res) => {
   try {
     const userId = req.params.id;
+      const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        status: httpStatusText.FAIL, 
+        message: "User not found" 
+      });
+    }
+      for (const cartItem of user.cartItems) {
+      const { productId, quantity } = cartItem;
+        const inventory = await Inventory.findOne({ "products.productId": productId });
+      if (inventory) {
+        const prodSubdoc = inventory.products.find(p => p.productId.equals(productId));
+        if (prodSubdoc) {
+          prodSubdoc.stockOut = (prodSubdoc.stockOut || 0) - quantity;
+          prodSubdoc.stockIn = (prodSubdoc.stockIn || 0) + quantity;
+        } else {
+          console.warn("No inventory subdocument found for productId:", productId);
+        }
+        await inventory.save();
+      } else {
+        console.warn("No inventory record found for productId:", productId);
+      }
+  
+      await Product.findByIdAndUpdate(productId, { $inc: { stock: quantity } });
+    }
+    user.cartItems = [];
+    await user.save();
+  
+    return res.status(200).json({
+      status: httpStatusText.SUCCESS,
+      data: user.cartItems,
+    });
+  
+  } catch (err) {
+    console.error("Error clearing cart:", err);
+    return res.status(err.statusCode || 500).json({
+      status: httpStatusText.ERROR,
+      message: err.message,
+    });
+  }
+});
+
+
+router.delete("/clear2/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
   
     // Find the user
     const user = await User.findById(userId);
@@ -696,42 +695,12 @@ router.delete("/homeclear/:id", async (req, res) => {
         message: "User not found" 
       });
     }
-  
-    // Iterate over each cart item to reverse inventory and product stock changes
-    for (const cartItem of user.cartItems) {
-      const { productId, quantity } = cartItem;
-  
-      // Find the Inventory document that contains this product
-      const inventory = await Inventory.findOne({ "products.productId": productId });
-      if (inventory) {
-        // Find the subdocument for this product
-        const prodSubdoc = inventory.products.find(p => p.productId.equals(productId));
-        if (prodSubdoc) {
-          // Reverse the effect of the previous "sale"
-          // Assuming that when the item was added, stockOut was increased,
-          // now we decrease stockOut by the removed quantity.
-          prodSubdoc.stockOut = (prodSubdoc.stockOut || 0) - quantity;
-          prodSubdoc.stockIn = (prodSubdoc.stockIn || 0) + quantity;
-          // Available stock is computed as (stockIn - stockOut)
-        } else {
-          console.warn("No inventory subdocument found for productId:", productId);
-        }
-        await inventory.save();
-      } else {
-        console.warn("No inventory record found for productId:", productId);
-      }
-  
-      // Update the overall product stock: increase stock by the removed quantity
-      await Product.findByIdAndUpdate(productId, { $inc: { stock: quantity } });
-    }
-  
-    // Clear the user's cart items
     user.cartItems = [];
     await user.save();
   
     return res.status(200).json({
       status: httpStatusText.SUCCESS,
-      data: user.cartItems, // Should be empty now
+      data: user.cartItems,
     });
   
   } catch (err) {
