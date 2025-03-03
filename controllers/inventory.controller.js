@@ -68,7 +68,7 @@ const getInventoryData = async (req, res)=>{
 
 const getInventoryDatafinal = async (req, res)=>{
     try{
-        const InventoryData = await InventoryService.getInventoryDatafinal();
+        const InventoryData = await InventoryService.GetInventoryDatafinal();
         res.status(200).json(
             InventoryData
         );
@@ -205,39 +205,58 @@ const transferfromadmintobranch = async (req, res) => {
   try {
     const { productId, branchId } = req.body;
 
-    // Find product in main stock
-    const product = await Product.findById(productId);
-    if (!product) return res.status(404).json({ message: "Product not found" });
+    // Find inventory entry for the product
+    const inventory = await Inventory.findOne({
+      "products.productId": productId,
+    });
 
-    if (product.stock <= 0)
-      return res.status(400).json({ message: "Stock is empty" });
+    if (!inventory)
+      return res
+        .status(404)
+        .json({ message: "Product not found in inventory" });
 
-    // 10% transfer, but at least 1 unit
-    const transferQuantity = Math.max(Math.floor(product.stock * 0.5), 1);
+    // Find the specific product in the inventory
+    const productEntry = inventory.products.find(
+      (p) => p.productId.toString() === productId
+    );
 
-    if (product.stock < transferQuantity){
-      return res.status(400).json({ message: "Not enough stock for transfer" });
-        
+    if (!productEntry)
+      return res
+        .status(404)
+        .json({ message: "Product entry not found in inventory" });
+
+    if (productEntry.stockIn <= 0) {
+      return res
+        .status(400)
+        .json({ message: "Stock is empty in main inventory" });
     }
 
-    // Find branch inventory for the specific product
+    // Transfer 10% but at least 1 unit
+    const transferQuantity = Math.max(
+      Math.floor(productEntry.stockIn * 0.5),
+      1
+    );
+
+    if (productEntry.stockIn < transferQuantity) {
+      return res.status(400).json({ message: "Not enough stock for transfer" });
+    }
+
+    // Find or create branch inventory for this product
     let branchInventory = await BranchInventory.findOne({
       branchId,
       productId,
     });
 
     if (!branchInventory) {
-      // If branch inventory does not exist, create a new entry for the product
       branchInventory = new BranchInventory({
         branchId,
         productId,
         stockIn: transferQuantity,
         stockOut: 0,
         currentStock: transferQuantity,
-        price: product.price, // Assuming price should be carried over
+        price: productEntry.price, // Carry price from inventory
       });
     } else {
-      // Check if adding stock exceeds capacity
       if (
         branchInventory.capacity &&
         branchInventory.currentStock + transferQuantity >
@@ -248,15 +267,15 @@ const transferfromadmintobranch = async (req, res) => {
           .json({ message: "Not enough space in branch inventory" });
       }
 
-      // If product exists in inventory, increase quantity
       branchInventory.stockIn += transferQuantity;
       branchInventory.currentStock += transferQuantity;
     }
 
-    product.stock -= transferQuantity; // Reduce main stock
+    // Decrease stockIn in the main inventory (instead of product stock)
+    productEntry.stockIn -= transferQuantity;
 
     await branchInventory.save();
-    await product.save();
+    await inventory.save(); // Save inventory changes
 
     res.json({
       message: `Transferred ${transferQuantity} units of product ${productId} to branch ${branchId}`,
@@ -337,7 +356,7 @@ router.get('/requests', getAllRequests);
 router.put('/stockReq/:requestId', changeRequestStat);
 router.post('/transfer/:requestId', transferToBranch);
 router.post('/transferfromadmintobranch', transferfromadmintobranch);
-router.post('/transferfromadmintobranch', transferfromadmintobranch);
+//router.post('/transferfromadmintobranch', transferfromadmintobranch);
 router.get('/branch/orders/:cashierId', getOrdersByBranch);
 router.get('/branch/requests/:branchId', getRequestsForBranch);
 
